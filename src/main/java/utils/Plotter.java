@@ -8,8 +8,17 @@ import ij.plugin.filter.*;
 import java.util.*;
 import java.awt.*;
 
+/**
+ *
+ * @author alex
+ */
 public class Plotter {
 
+    /**
+     *
+     * @param array
+     * @return the mean of the array values 
+     */
     public static double averag(double[] array) {
         double suma = 0;
         for (int i = 0; i < array.length; i++) {
@@ -18,6 +27,11 @@ public class Plotter {
         return suma / array.length;
     }
 
+    /**
+     *
+     * @param array
+     * @return the stddev of the array values
+     */
     public static double StdDev(double[] array) {
         double suma = 0;
         for (int i = 0; i < array.length; i++) {
@@ -99,6 +113,13 @@ public class Plotter {
         plot.show();
     }
 
+    /**
+     *
+     * @param xi array with x values
+     * @param yi array with y values
+     * @param showplot boolean to show the plot
+     * @return an array containing the parameters of the fit
+     */
     public static double[] LinearFit(double[] xi, double[] yi, boolean showplot) {
         CurveFitter cf = new CurveFitter(xi, yi);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
@@ -109,10 +130,24 @@ public class Plotter {
         return cf.getParams();
     }
 
+    /**
+     * 
+     * Default using of Linear fit: always plot
+     * @param xi array with x values
+     * @param yi array with y values
+     * @return an array containing the parameters of the fit
+     */
     public static double[] LinearFit(double[] xi, double[] yi) {
         return LinearFit(xi, yi, true);
     }
 
+    /**
+     * 
+     * Returns the residual values in a linear fit
+     * @param xi array with x values
+     * @param yi array with y values
+     * @return an array containing the residuals of the fit
+     */
     public static double[] getResidualsinLinearFit(double[] xi, double[] yi) {
         CurveFitter cf = new CurveFitter(xi, yi);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
@@ -122,6 +157,13 @@ public class Plotter {
 
     private static final double fac = 2 * Math.sqrt(2 * Math.log(2));
 
+    /**
+     *
+     * @param xi array with x values
+     * @param yi array with y values
+     * @param showplot boolean to show the plot
+     * @return an array containing the parameters of the fit
+     */
     public static double[] GaussianFit(double[] xi, double[] yi, boolean showplot) {
         CurveFitter cf = new CurveFitter(xi, yi);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
@@ -132,15 +174,38 @@ public class Plotter {
         return cf.getParams();
     }
 
+     /**
+     * 
+     * Default using of Gaussian fit: always plot
+     * @param xi array with x values
+     * @param yi array with y values
+     * @return an array containing the parameters of the fit
+     */
     public static double[] GaussianFit(double[] xi, double[] yi) {
         return GaussianFit(xi, yi, true);
     }
 
+    /**
+     * 
+     * @param xi array with x values
+     * @param yi array with y values
+     * @param pixwidth pixel width
+     * @param showplot boolean to show the plot
+     * @return the resolution based on gaussian fit of the data
+     */
     public static double resolution(double[] xi, double[] yi, double pixwidth, boolean showplot) {
         double[] params = GaussianFit(xi, yi, showplot);
         return params[3] * fac * pixwidth;
     }
 
+    /**
+     * 
+     * Default using of resolution: always plot
+     * @param xi array with x values
+     * @param yi array with y values
+     * @param pixwidth pixel width
+     * @return the resolution based on gaussian fit of the data
+     */
     public static double resolution(double[] xi, double[] yi, double pixwidth) {
         return resolution(xi, yi, pixwidth, true);
     }

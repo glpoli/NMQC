@@ -33,6 +33,19 @@
 			</roles>
 			<timezone>-5</timezone>
 		</developer>
+                <developer>
+			<id>rtf</id>
+			<name>Ricardo Terrero</name>
+			<email>ricardoterrero92@gmail.com</email>
+			<url></url>
+			<organization>INSTEC</organization>
+			<organizationUrl>http://www.instec.cu/</organizationUrl>
+			<roles>
+				<role>medical physicist student</role>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
 	</developers>
 
 	<scm>
