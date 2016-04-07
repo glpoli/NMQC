@@ -1,0 +1,7 @@
+ObjectType = Image
+NDims = 2
+BinaryData = True
+DimSize = 256 256
+ElementSize = 2.064999816 2.064999816
+ElementType = MET_USHORT
+ElementDataFile = UNIFORMIDAD_circular.raw
