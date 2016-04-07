@@ -155,6 +155,7 @@ public class C_O_R implements PlugInFilter {
 
     void showAbout() {
         IJ.showMessage(" Acerca de COR...",
-                "Este plugin es para hallar el COR de imagenes 8-bit.");
+                "Para determinar el centro de rotación de una cámara gamma./n"+
+                "To determinate the center of rotation of gamma camera");
     }
 }
