@@ -55,7 +55,7 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         float[][] pixels = ip.getFloatArray();				// Se guarda en el arreglo pixels[][] los pixels de la imagen.
 
         int nbins = (int) (roi.getFloatHeight() * vh / 30);
-        IJ.write("Numero de bins: " + nbins);
+        IJ.write("Number of bins: " + nbins);
 
         double[][] counts = new double[nbins][(int) roi.getFloatWidth()];
         double dpos = roi.getFloatHeight() / (nbins - 1);
@@ -130,14 +130,24 @@ public class IntResol_Linearity_Y implements PlugInFilter {
             System.arraycopy(tresiduals, 0, residuals, j * nbins, nbins);
         }
         double[] a = Tools.getMinMax(residuals);
-        IJ.write("Worst Intrinsic Resolution in Y: " + IJ.d2s(resol, 4, 9) + "mm");
-        IJ.write("Mean Intrinsic Resolution in Y: " + IJ.d2s(meanresol / countpeaks, 4, 9) + "mm");
-        IJ.write("Absolute Linearity Y: " + IJ.d2s(a[1], 4, 9) + "mm");
-        IJ.write("Differential Linearity Y: " + IJ.d2s(Plotter.StdDev(residuals), 4, 9) + "mm");
+        ResultsTable rt = new ResultsTable();
+        //rt.reset();
+        for (int i = 0; i < 1; i++) {
+            rt.incrementCounter();
+            rt.addValue("Worst Intrinsic Resolution in Y(mm): ", IJ.d2s(resol, 4, 9));
+            rt.addValue("Mean Intrinsic Resolution in Y(mm): ", IJ.d2s(meanresol / countpeaks, 4, 9));
+            rt.addValue("Absolute Linearity in Y(mm): ", IJ.d2s(a[1], 4, 9));
+            rt.addValue("Differential Linearity in Y(mm): ", IJ.d2s(Plotter.StdDev(residuals), 4, 9));
+        }
+        rt.showRowNumbers(false);
+        rt.show("Intrinsic Resolution and Linearity in Y");
     }
 
     void showAbout() {
-        IJ.showMessage(" Acerca de Linealidad...",
-                "Este plugin es para hallar la linealidad.");
+        IJ.showMessage(" About Intrinsic Resolution and Linearity...",
+                "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en el eje X en mm\n"
+                 + " y determina la linealidad absoluta y diferencial en el eje Y en mm.\n"
+                 + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
+                 + " and determinate the absolute linearity and differential linearity in Y in mm.\n");
     }
 }
