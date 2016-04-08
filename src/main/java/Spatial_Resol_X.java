@@ -14,6 +14,7 @@ import NMQC.utils.*;
 public class Spatial_Resol_X implements PlugInFilter {
 
     private ImagePlus imp;
+    private Roi roi;
 
     /**
      *
@@ -31,6 +32,11 @@ public class Spatial_Resol_X implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
+        roi = imp.getRoi();
+        if (roi == null) {
+            IJ.error("Selection required");
+            return DONE;
+        }
         this.imp = imp;
         return DOES_ALL;
     }
@@ -41,12 +47,6 @@ public class Spatial_Resol_X implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
-
-        Roi roi = imp.getRoi();
-        if (roi == null) {
-            IJ.error("Selection required");
-            return;
-        }
 
         //int w = ip.getWidth();
         //int h = ip.getHeight();
