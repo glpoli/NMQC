@@ -96,7 +96,7 @@ public class Planar_Uniformity implements PlugInFilter {
         return UFOV;
     }
 
-    private void getUniformity(ImagePlus imp, String choice, String sFOV) {
+    private void getUniformity(ImagePlus imp, String choice, String sFOV, ResultsTable rt) {
         Binner bin = new Binner();
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), 4, 4, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
@@ -175,14 +175,10 @@ public class Planar_Uniformity implements PlugInFilter {
         imp2.show();
 
         //imp2.show();
-        ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {rt = new ResultsTable();}
         rt.incrementCounter();
         rt.addValue("ROI", sFOV);
         rt.addValue("Integral Uniformity", IU);
         rt.addValue("Differential Uniformity", DU);
-        rt.showRowNumbers(true);
-        rt.show("Planar uniformity");
         //return lFOV;
     }
 
@@ -192,6 +188,7 @@ public class Planar_Uniformity implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
+        /*  Dialog to handle the method and the background
         GenericDialog gd = new GenericDialog("Planar Uniformity.");
         //gd.addChoice("Select FOV:", form, "UFOV");
         gd.addChoice("Select threshold method:", mMethodStr, "Default");
@@ -206,7 +203,11 @@ public class Planar_Uniformity implements PlugInFilter {
         if (darkb) {
             choice += " dark";
         }
-        
+        */ // end Dialog
+        String choice = "Triangle dark"; // No dialog used
+        /*ResultsTable rt = ResultsTable.getResultsTable();
+        if (rt == null) {rt = new ResultsTable();}*/
+        ResultsTable rt = new ResultsTable();
         //imp = WindowManager.getCurrentImage();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {
@@ -217,12 +218,15 @@ public class Planar_Uniformity implements PlugInFilter {
         String sFOV = "UFOV";
         FOV = getThreshold(imp, choice, 0.95);
         RM.addRoi(FOV);
-        getUniformity(imp, choice, sFOV);
+        getUniformity(imp, choice, sFOV, rt);
         sFOV = "CFOV";
         FOV = getThreshold(imp, choice, 0.75);
         RM.addRoi(FOV);
-        getUniformity(imp, choice, sFOV);
+        getUniformity(imp, choice, sFOV, rt);
+        rt.showRowNumbers(true);
+        rt.show("Planar uniformity");
         RM.runCommand(imp, "Show All");
+        RM.setVisible(false);
     }
     
     void showAbout() {
