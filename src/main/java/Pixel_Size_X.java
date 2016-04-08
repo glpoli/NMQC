@@ -103,13 +103,10 @@ public class Pixel_Size_X implements PlugInFilter {
         double size = d / c;
 
         ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {
-            rt = new ResultsTable();
-        }
         rt.incrementCounter();
         rt.addValue("Pixel size (cm)", size);
         rt.showRowNumbers(true);
-        rt.show("Results");
+        rt.show("Pixel size in X");
     }
 
     void showAbout() {

@@ -99,15 +99,12 @@ public class Spatial_Resol_X implements PlugInFilter {
 
         //Plotter.plot(cf1, false);
         //Plotter.plot(cf2, false);
-        ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {
-            rt = new ResultsTable();
-        }
+        ResultsTable rt =  new ResultsTable();
         rt.incrementCounter();
         rt.addValue("Res1(mm)", res1);
         rt.addValue("Res2(mm)", res2);
         rt.showRowNumbers(true);
-        rt.show("Results");
+        rt.show("Spatial resolution in X");
     }
 
     void showAbout() {
