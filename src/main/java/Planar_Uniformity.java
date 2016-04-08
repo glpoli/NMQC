@@ -176,6 +176,7 @@ public class Planar_Uniformity implements PlugInFilter {
 
         //imp2.show();
         ResultsTable rt = ResultsTable.getResultsTable();
+        if (rt == null) {rt = new ResultsTable();}
         rt.incrementCounter();
         rt.addValue("ROI", sFOV);
         rt.addValue("Integral Uniformity", IU);
@@ -205,6 +206,7 @@ public class Planar_Uniformity implements PlugInFilter {
         if (darkb) {
             choice += " dark";
         }
+        
         //imp = WindowManager.getCurrentImage();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {

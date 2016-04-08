@@ -55,7 +55,6 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         float[][] pixels = ip.getFloatArray();				// Se guarda en el arreglo pixels[][] los pixels de la imagen.
 
         int nbins = (int) (roi.getFloatHeight() * vh / 30);
-        IJ.write("Number of bins: " + nbins);
 
         double[][] counts = new double[nbins][(int) roi.getFloatWidth()];
         double dpos = roi.getFloatHeight() / (nbins - 1);
@@ -131,14 +130,21 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         }
         double[] a = Tools.getMinMax(residuals);
         ResultsTable rt = new ResultsTable();
-        //rt.reset();
-        for (int i = 0; i < 1; i++) {
-            rt.incrementCounter();
-            rt.addValue("Worst Intrinsic Resolution in Y(mm): ", IJ.d2s(resol, 4, 9));
-            rt.addValue("Mean Intrinsic Resolution in Y(mm): ", IJ.d2s(meanresol / countpeaks, 4, 9));
-            rt.addValue("Absolute Linearity in Y(mm): ", IJ.d2s(a[1], 4, 9));
-            rt.addValue("Differential Linearity in Y(mm): ", IJ.d2s(Plotter.StdDev(residuals), 4, 9));
-        }
+        rt.incrementCounter();
+        rt.addValue("Test","Number of bins: ");
+        rt.addValue("Value",nbins);
+        rt.incrementCounter();
+        rt.addValue("Test","Worst Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Value",IJ.d2s(resol, 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Mean Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Value",IJ.d2s(meanresol / countpeaks, 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Absolute Linearity in Y(mm): ");
+        rt.addValue("Value",IJ.d2s(a[1], 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Differential Linearity in Y(mm): ");
+        rt.addValue("Value",IJ.d2s(Plotter.StdDev(residuals), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity in Y");
     }

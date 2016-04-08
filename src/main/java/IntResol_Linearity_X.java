@@ -55,7 +55,6 @@ public class IntResol_Linearity_X implements PlugInFilter {
         float[][] pixels = ip.getFloatArray();				// Se guarda en el arreglo pixels[][] los pixels de la imagen.
 
         int nbins = (int) (roi.getFloatWidth() * vw / 30);
-        IJ.write("Number of bins: " + nbins);
 
         double[][] counts = new double[nbins][(int) roi.getFloatHeight()];
         double dpos = roi.getFloatWidth() / (nbins - 1);
@@ -131,14 +130,21 @@ public class IntResol_Linearity_X implements PlugInFilter {
         }
         double[] a = Tools.getMinMax(residuals);
         ResultsTable rt = new ResultsTable();
-        //rt.reset();
-        for (int i = 0; i < 1; i++) {
-            rt.incrementCounter();
-            rt.addValue("Worst Intrinsic Resolution in X(mm): ", IJ.d2s(resol, 4, 9));
-            rt.addValue("Mean Intrinsic Resolution in X(mm): ", IJ.d2s(meanresol / countpeaks, 4, 9));
-            rt.addValue("Absolute Linearity in X(mm): ", IJ.d2s(a[1], 4, 9));
-            rt.addValue("Differential Linearity in X(mm): ", IJ.d2s(Plotter.StdDev(residuals), 4, 9));
-        }
+        rt.incrementCounter();
+        rt.addValue("Test","Number of bins: ");
+        rt.addValue("Value",nbins);
+        rt.incrementCounter();
+        rt.addValue("Test","Worst Intrinsic Resolution in X(mm): ");
+        rt.addValue("Value",IJ.d2s(resol, 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Mean Intrinsic Resolution in X(mm): ");
+        rt.addValue("Value",IJ.d2s(meanresol / countpeaks, 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Absolute Linearity in X(mm): ");
+        rt.addValue("Value",IJ.d2s(a[1], 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test","Differential Linearity in X(mm): ");
+        rt.addValue("Value",IJ.d2s(Plotter.StdDev(residuals), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity in X");
     }
@@ -146,8 +152,8 @@ public class IntResol_Linearity_X implements PlugInFilter {
     void showAbout() {
         IJ.showMessage(" About Intrinsic Resolution and Linearity...",
                 "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en el eje X en mm\n"
-                 + " y determina la linealidad absoluta y diferencial en el eje X en mm.\n"
-                 + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
-                 + " and determinate the absolute linearity and differential linearity in X in mm.\n");
+                + " y determina la linealidad absoluta y diferencial en el eje X en mm.\n"
+                + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
+                + " and determinate the absolute linearity and differential linearity in X in mm.\n");
     }
 }
