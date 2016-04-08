@@ -176,15 +176,12 @@ public class Planar_Uniformity implements PlugInFilter {
 
         //imp2.show();
         ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {
-            rt = new ResultsTable();
-        }
         rt.incrementCounter();
         rt.addValue("ROI", sFOV);
         rt.addValue("Integral Uniformity", IU);
         rt.addValue("Differential Uniformity", DU);
         rt.showRowNumbers(true);
-        rt.show("Results");
+        rt.show("Planar uniformity");
         //return lFOV;
     }
 

@@ -144,6 +144,7 @@ public class C_O_R implements PlugInFilter {
                 + "Center of Rotation Y: " + IJ.d2s(c[1], 3, 9) + " cm.");*/
 
         ResultsTable rt2 = new ResultsTable();
+        //rt2.reset();
         for (int i = 0; i < 1; i++) {
             rt2.incrementCounter();
             rt2.addValue("COR X (cm)", IJ.d2s(b[1], 5, 9));
@@ -154,8 +155,8 @@ public class C_O_R implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" Acerca de COR...",
-                "Para determinar el centro de rotación de una cámara gamma./n"+
+        IJ.showMessage(" About COR...",
+                "Para determinar el centro de rotación de una cámara gamma.\n"+
                 "To determinate the center of rotation of gamma camera");
     }
 }
