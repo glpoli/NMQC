@@ -49,17 +49,17 @@ public class IntResol_Linearity_Y implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
-        Calibration cal = imp.getCalibration();				// Declara la variable cal de donde se saca el ancho, alto y profundidad del pixel.
-        double vw = cal.pixelWidth;							// Se declara el ancho del pixel.
-        double vh = cal.pixelHeight;						// Se declara la altura del pixel.
-        float[][] pixels = ip.getFloatArray();				// Se guarda en el arreglo pixels[][] los pixels de la imagen.
+        Calibration cal = imp.getCalibration();				
+        double vw = cal.pixelWidth;							
+        double vh = cal.pixelHeight;						
+        float[][] pixels = ip.getFloatArray();				
 
         int nbins = (int) (roi.getFloatHeight() * vh / 30);
 
         double[][] counts = new double[nbins][(int) roi.getFloatWidth()];
         double dpos = roi.getFloatHeight() / (nbins - 1);
 
-        for (int i = 0; i < roi.getFloatWidth(); i++) {			// Se recorre la imagen 
+        for (int i = 0; i < roi.getFloatWidth(); i++) {			
             for (int j = 0; j < nbins; j++) {
                 for (int k = 0; k < dpos; k++) {
                     counts[j][i] += pixels[i + (int) roi.getXBase()][j * k + (int) roi.getYBase()];
