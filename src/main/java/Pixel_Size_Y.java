@@ -93,7 +93,7 @@ public class Pixel_Size_Y implements PlugInFilter {
 
         double c = c2 - c1;
 
-        GenericDialog gd = new GenericDialog("Pixel Size");
+        GenericDialog gd = new GenericDialog("Pixel Size in Y");
         gd.addNumericField("Enter distance between sources (cm):", 10, 2);
         gd.showDialog();
         if (gd.wasCanceled()) {
@@ -102,9 +102,9 @@ public class Pixel_Size_Y implements PlugInFilter {
         double d = gd.getNextNumber();
         double size = d / c;
 
-        ResultsTable rt = ResultsTable.getResultsTable();
+        ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Pixel size (cm)", size);
+        rt.addValue("Pixel size(cm)", size);
         rt.showRowNumbers(true);
         rt.show("Pixel size in Y");
     }
