@@ -43,7 +43,6 @@ public class C_O_R implements PlugInFilter {
     public void run(ImageProcessor ip) {
 
         int ns = imp.getStackSize();
-        //IJ.showMessage("Number of images:" + ns);
         Calibration cal = imp.getCalibration();
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
@@ -60,37 +59,12 @@ public class C_O_R implements PlugInFilter {
             cmy[z - 1] = is.yCenterOfMass * vh;
         }
 
-        //ResultsTable rt = new ResultsTable();
-
-        /*for (int i = 0; i < it.length; i++) {
-            rt.incrementCounter();
-            rt.addValue(" ", it[i]);
-            rt.addValue("XM", cmx[i]);
-            rt.addValue("YM", cmy[i]);
-        }
-        rt.showRowNumbers(false);
-        rt.show("Results");*/
-
         CurveFitter cf = new CurveFitter(it, cmx);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
         java.lang.String equation = "y = a + b * sin(c * x + d)";
         double[] initialParams = new double[4];
         boolean showSettings = false;
-        /* Using user input
-        GenericDialog gd = new GenericDialog("CurveFitting settings");
-        gd.addNumericField("a:", cmx[0], 3);
-        gd.addNumericField("b:", 0.0, 3);
-        gd.addNumericField("c:", 2 * Math.PI / ns, 3);
-        gd.addNumericField("d:", 0.0, 3);
-        gd.showDialog();
-        if (gd.wasCanceled()) {
-            return;
-        }
-        
-        for (int n = 0; n < 4; n++) {
-            initialParams[n] = (float) gd.getNextNumber();
-        }*/        
-        
+
         // Using default initialization
         initialParams[0] = cmx[0];
         initialParams[1] = 0.0;
@@ -116,20 +90,7 @@ public class C_O_R implements PlugInFilter {
         }
         Plotter.plot(cf, false);
 
-        /* Show the fitting parameters
-        ResultsTable rt1 = new ResultsTable();
-        double[] params = cf.getParams();
-        char pChar1 = 'a';
-        for (int n = 0; n < 4; n++) {
-            rt1.incrementCounter();
-            rt1.addValue(" ", Character.toString(pChar1));
-            rt1.addValue("Parameters", params[n]);
-            pChar1++;
-        }
-        rt1.showRowNumbers(false);
-        rt1.show("Parameters");*/
-
-        //Para hallar CMY
+        //To determinate the offset in Y
         double avgy = Plotter.averag(cmy);
         double[] diferencia = new double[ns];
         for (int i = 0; i < cmy.length - 1; i++) {
