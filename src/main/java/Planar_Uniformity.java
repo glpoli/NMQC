@@ -3,7 +3,7 @@ package NMQC;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.gui.GenericDialog;
+//import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
