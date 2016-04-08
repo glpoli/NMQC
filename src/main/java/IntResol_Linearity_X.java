@@ -81,7 +81,6 @@ public class IntResol_Linearity_X implements PlugInFilter {
             }
             peakpositions[i] = new double[peakpos.length];
             x[i] = new double[peakpos.length];
-            //String lin = "pos:";
             int med = 0;
             for (int j = 0; j < peakpos.length - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
@@ -92,7 +91,6 @@ public class IntResol_Linearity_X implements PlugInFilter {
                     x1[k] = k + med;
                 }
                 peakpositions[i][j] = Plotter.peakpos(x1, arr1, false) * vh;
-                //lin+= " " + peakpositions[i][j];
                 med = med1;
                 x[i][j] = j;
                 double tresol = Plotter.resolution(x1, arr1, vh, false);
@@ -112,10 +110,8 @@ public class IntResol_Linearity_X implements PlugInFilter {
             resol = Math.max(resol, tresol);
             meanresol += tresol;
             countpeaks += 1;
-            //IJ.write(lin);
         }
 
-        //for (int i=0; i<nbins; i++) Plotter.LinearFit(x[i],peakpositions[i]);
         double[] residuals = new double[npeaks * nbins];
         for (int j = 0; j < npeaks; j++) {
             double[] newx = new double[nbins];
@@ -124,7 +120,6 @@ public class IntResol_Linearity_X implements PlugInFilter {
                 newx[i] = i;
                 newpos[i] = peakpositions[i][j];
             }
-            //Plotter.LinearFit(newx,newpos);
             double[] tresiduals = Plotter.getResidualsinLinearFit(newx, newpos);
             System.arraycopy(tresiduals, 0, residuals, j * nbins, nbins);
         }

@@ -97,8 +97,6 @@ public class Spatial_Resol_Y implements PlugInFilter {
         double res1 = Plotter.resolution(x1, arr1, vh);
         double res2 = Plotter.resolution(x2, arr2, vh);
 
-        //Plotter.plot(cf1, false);
-        //Plotter.plot(cf2, false);
         ResultsTable rt = ResultsTable.getResultsTable();
         rt.incrementCounter();
         rt.addValue("Res1(mm)", res1);

@@ -56,13 +56,7 @@ public class Plotter {
             plot.show();
             return;
         }
-        int npoints = 100;
-        if (npoints < x.length) {
-            npoints = x.length; //or 2*x.length-1; for 2 values per data point
-        }
-        if (npoints > 1000) {
-            npoints = 1000;
-        }
+        int npoints = Math.min(Math.max(x.length, 100), 1000);
         double[] a = Tools.getMinMax(x);
         double xmin = a[0], xmax = a[1];
         if (eightBitCalibrationPlot) {

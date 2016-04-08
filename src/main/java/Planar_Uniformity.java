@@ -101,7 +101,6 @@ public class Planar_Uniformity implements PlugInFilter {
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), 4, 4, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
         imp2.deleteRoi();
-        //GaussianBlur.blurGaussian(ip2, 2, 2, 1e-5);
         double cutoff;
         if (sFOV.equals("CFOV")) {
             cutoff = 0.75;
@@ -110,16 +109,12 @@ public class Planar_Uniformity implements PlugInFilter {
         }
         Roi lFOV = getThreshold(imp2, choice, cutoff);
         imp2.setRoi(lFOV);
-        //ip2.resetMinAndMax();
         float[] kernel = {1, 2, 1, 2, 4, 2, 1, 2, 1};
         Convolver cv = new Convolver();
         cv.setNormalize(true);
         cv.convolve(ip2, kernel, 3, 3);
         imp2.updateAndDraw();
-        //imp2.show();
-        //IJ.run(imp2, "Enhance Contrast", "");
         ImageStatistics is0 = ip2.getStatistics();
-        //IJ.showMessage("min: "+is0.min+" max:"+is0.max+" IU:"+IU);
 
         float[][] pixels = ip2.getFloatArray();
         double DU = 0;
@@ -174,12 +169,10 @@ public class Planar_Uniformity implements PlugInFilter {
         ip2.setMinAndMax(globalmin, globalmax);
         imp2.show();
 
-        //imp2.show();
         rt.incrementCounter();
         rt.addValue("ROI", sFOV);
         rt.addValue("Integral Uniformity", IU);
         rt.addValue("Differential Uniformity", DU);
-        //return lFOV;
     }
 
     /**
@@ -208,7 +201,6 @@ public class Planar_Uniformity implements PlugInFilter {
         /*ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) {rt = new ResultsTable();}*/
         ResultsTable rt = new ResultsTable();
-        //imp = WindowManager.getCurrentImage();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {
             RM = new RoiManager();
