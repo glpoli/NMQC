@@ -135,7 +135,7 @@ public class Planar_Uniformity implements PlugInFilter {
                     if (pixels[i][j] > globalmax) {
                         globalmax = pixels[i][j];
                     }
-                    // Por filas
+                    // By rows
                     for (int k = -2; k <= 2; k++) {
                         int x = Math.max(0, Math.min(w - 1, i + k));
                         if (lFOV.contains(x, j)) {
@@ -148,7 +148,7 @@ public class Planar_Uniformity implements PlugInFilter {
                         }
                     }
                     DU = Math.max(DU, ((localmax - localmin) / (localmax + localmin)) * 100);
-                    // Por columnas
+                    // By columns
                     for (int l = -2; l <= 2; l++) {
                         int y = Math.max(0, Math.min(h - 1, j + l));
                         if (lFOV.contains(i, y)) {
