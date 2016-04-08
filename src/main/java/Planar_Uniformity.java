@@ -18,7 +18,7 @@ public class Planar_Uniformity implements PlugInFilter {
     private ImagePlus imp;
     //private final String[] form = {"UFOV", "CFOV"};
     //private final AutoThresholder.Method[] mMethod = AutoThresholder.Method.values();
-    private final String[] mMethodStr = AutoThresholder.getMethods();
+    //private final String[] mMethodStr = AutoThresholder.getMethods(); // Enable this line if you want to enable the dialog
 
     /**
      *
