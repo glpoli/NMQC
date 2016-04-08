@@ -140,18 +140,14 @@ public class C_O_R implements PlugInFilter {
         double[] b = Tools.getMinMax(rest);
         double[] c = Tools.getMinMax(diferencia);
 
-        /*IJ.showMessage("Center of Rotation X: " + IJ.d2s(b[1], 3, 9) + " cm.\n"
-                + "Center of Rotation Y: " + IJ.d2s(c[1], 3, 9) + " cm.");*/
-
-        ResultsTable rt2 = new ResultsTable();
-        //rt2.reset();
+        ResultsTable rt = new ResultsTable();
         for (int i = 0; i < 1; i++) {
-            rt2.incrementCounter();
-            rt2.addValue("COR X (cm)", IJ.d2s(b[1], 5, 9));
-            rt2.addValue("COR Y (cm)", IJ.d2s(c[1], 5, 9));
+            rt.incrementCounter();
+            rt.addValue("COR X (cm)", IJ.d2s(b[1], 5, 9));
+            rt.addValue("COR Y (cm)", IJ.d2s(c[1], 5, 9));
         }
-        rt2.showRowNumbers(false);
-        rt2.show("Center of Rotations");
+        rt.showRowNumbers(false);
+        rt.show("Center of Rotations");
     }
 
     void showAbout() {
