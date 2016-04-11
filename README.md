@@ -20,4 +20,15 @@ Current capabilities
     - Image must be a line grid phantom
     - User must provide a ROI containing ONLY the relevant part of the image
     - Limitation: the ROI cant include octogonal or circular shapes
+	
+Tools
+
+  1. Geometric Mean
+    - Useful to get the geometric mean in renal studies for antero-posterior views
+	- Two images (Anterior and Posterior views) are expected
+	- Anterior image is mirrored for alignment
+  2. Cardiac Reslicer
+    - Useful to separate the scatter from the emission views in cardiac studies
+	- Expected an image with a sequence of scatter - emission images in all segments
+	- Images can be gated
 
