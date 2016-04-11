@@ -54,34 +54,34 @@ public class Cardiac_Reslicer implements PlugInFilter {
         int ns = imp.getStackSize();
         int views = (int) gd.getNextNumber();
         int segments = (int) gd.getNextNumber();
-        int sctwin = (int) (ns / (views * segments));
+        int sctwin = (int) ((ns / (views * segments))) - 1;
 
-        ImageStack emision = ImageStack.create(ip.getWidth(), ip.getHeight(), views, 16);
+        ImageStack emision= new ImageStack(ip.getWidth(), ip.getHeight());
         ImageStack[] scatter = new ImageStack[sctwin];
         for (int i = 0; i < sctwin; i++) {
-            scatter[i] = ImageStack.create(ip.getWidth(), ip.getHeight(), views, 16);
+            scatter[i] = new ImageStack(ip.getWidth(), ip.getHeight());
         }
 
-        for (int z = 1; z <= ns; ) {
+        for (int z = 1; z <= ns;) {
             imp.setSlice(z);
             for (int i = 0; i < sctwin; i++) {
                 for (int j = 0; j < views; j++) {
-                    scatter[i].addSlice(ip);
+                    scatter[i].addSlice(ip.convertToShortProcessor());
                     imp.setSlice(++z);
                 }
             }
             for (int j = 0; j < views; j++) {
-                emision.addSlice(ip);
+                emision.addSlice(ip.convertToShortProcessor());
                 imp.setSlice(++z);
             }
         }
-        
+
         ImagePlus[] theScatter = new ImagePlus[sctwin];
         for (int i = 0; i < sctwin; i++) {
-            theScatter[i] = new ImagePlus("Scatter "+i, scatter[i]);
+            theScatter[i] = new ImagePlus("Scatter " + i, scatter[i]);
             theScatter[i].show();
-        } 
-        ImagePlus theEmission = new ImagePlus("Emission",emision);
+        }
+        ImagePlus theEmission = new ImagePlus("Emission", emision);
         theEmission.show();
 
     }
