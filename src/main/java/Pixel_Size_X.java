@@ -88,8 +88,8 @@ public class Pixel_Size_X implements PlugInFilter {
             arr2[i - med] = suma[i];
             x2[i - med] = i;
         }
-        double c1 = Plotter.peakpos(x1, arr1, false);
-        double c2 = Plotter.peakpos(x2, arr2, false);
+        double c1 = Fitter.peakpos(x1, arr1, false);
+        double c2 = Fitter.peakpos(x2, arr2, false);
 
         double c = c2 - c1;
 
@@ -104,13 +104,13 @@ public class Pixel_Size_X implements PlugInFilter {
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Pixel size(cm)", size);
+        rt.addValue("Pixel size(cm)", IJ.d2s(size, 4, 9));
         rt.showRowNumbers(true);
         rt.show("Pixel size in X");
     }
 
     void showAbout() {
-        IJ.showMessage(" Acerca de tamano del pixel...",
+        IJ.showMessage(" About Pixel Size in X...",
                 "Este plugin es para hallar el tamano del pixel en X.");
     }
 }

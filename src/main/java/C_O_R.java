@@ -91,7 +91,7 @@ public class C_O_R implements PlugInFilter {
         Plotter.plot(cf, false);
 
         //To determinate the offset in Y
-        double avgy = Plotter.averag(cmy);
+        double avgy = MathUtils.averag(cmy);
         double[] diferencia = new double[ns];
         for (int i = 0; i < cmy.length - 1; i++) {
             diferencia[i] = Math.abs(cmy[i] - avgy);
@@ -108,7 +108,7 @@ public class C_O_R implements PlugInFilter {
             rt.addValue("COR Y (cm)", IJ.d2s(c[1], 5, 9));
         }
         rt.showRowNumbers(false);
-        rt.show("Center of Rotations");
+        rt.show("Center of Rotation");
     }
 
     void showAbout() {

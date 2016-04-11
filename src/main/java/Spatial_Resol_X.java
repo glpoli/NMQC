@@ -94,8 +94,8 @@ public class Spatial_Resol_X implements PlugInFilter {
             x2[i - med] = i;
         }
 
-        double res1 = Plotter.resolution(x1, arr1, vw);
-        double res2 = Plotter.resolution(x2, arr2, vw);
+        double res1 = Fitter.resolution(x1, arr1, vw);
+        double res2 = Fitter.resolution(x2, arr2, vw);
 
         ResultsTable rt =  new ResultsTable();
         rt.incrementCounter();
@@ -106,7 +106,7 @@ public class Spatial_Resol_X implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" Acerca de Resolution...",
+        IJ.showMessage("About Spatial Resolution...",
                 "Este plugin es para hallar la resolucion espacial.");
     }
 }

@@ -41,6 +41,12 @@ public class Planar_Uniformity implements PlugInFilter {
         return DOES_ALL;
     }
 
+    /**
+     *
+     * @param imp The active image
+     * @param Method The method to calculate boundary, one of AutoThresholder.Method.values()
+     * @param cutoff The cuttof to shrink boundary poligon
+     */
     private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         ImagePlus imp2 = new ImagePlus("Thresholded " + Method, ip2);
@@ -101,12 +107,7 @@ public class Planar_Uniformity implements PlugInFilter {
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), 4, 4, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
         imp2.deleteRoi();
-        double cutoff;
-        if (sFOV.equals("CFOV")) {
-            cutoff = 0.75;
-        } else {
-            cutoff = 0.95;
-        }
+        double cutoff = sFOV.equals("CFOV") ? 0.75 : 0.95;
         Roi lFOV = getThreshold(imp2, choice, cutoff);
         imp2.setRoi(lFOV);
         float[] kernel = {1, 2, 1, 2, 4, 2, 1, 2, 1};
@@ -222,7 +223,7 @@ public class Planar_Uniformity implements PlugInFilter {
     }
     
     void showAbout() {
-        IJ.showMessage(" Acerca de Uniformidad Planar...",
+        IJ.showMessage("About Planar Uniformity...",
                 "Este plugin es para hallar la uniformidad planar.");
     }
 

@@ -4,8 +4,6 @@ import ij.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.measure.*;
-import ij.plugin.filter.*;
-import java.util.*;
 import java.awt.*;
 
 /**
@@ -13,32 +11,6 @@ import java.awt.*;
  * @author alex
  */
 public class Plotter {
-
-    /**
-     *
-     * @param array
-     * @return the mean of the array values 
-     */
-    public static double averag(double[] array) {
-        double suma = 0;
-        for (int i = 0; i < array.length; i++) {
-            suma = suma + array[i];
-        }
-        return suma / array.length;
-    }
-
-    /**
-     *
-     * @param array
-     * @return the stddev of the array values
-     */
-    public static double StdDev(double[] array) {
-        double suma = 0;
-        for (int i = 0; i < array.length; i++) {
-            suma = suma + array[i] * array[i];
-        }
-        return Math.sqrt(suma / (array.length * (array.length - 1)));
-    }
 
     /**
      *
@@ -66,17 +38,17 @@ public class Plotter {
         }
         a = Tools.getMinMax(y);
         double ymin = a[0], ymax = a[1]; //y range of data points
-        float[] px = new float[npoints];
-        float[] py = new float[npoints];
+        double[] px = new double[npoints];
+        double[] py = new double[npoints];
         double inc = (xmax - xmin) / (npoints - 1);
         double tmp = xmin;
         for (int i = 0; i < npoints; i++) {
-            px[i] = (float) tmp;
+            px[i] = tmp;
             tmp += inc;
         }
         double[] params = cf.getParams();
         for (int i = 0; i < npoints; i++) {
-            py[i] = (float) cf.f(params, px[i]);
+            py[i] = cf.f(params, px[i]);
         }
         a = Tools.getMinMax(py);
         double dataRange = ymax - ymin;
@@ -109,120 +81,8 @@ public class Plotter {
 
     /**
      *
-     * @param xi array with x values
-     * @param yi array with y values
-     * @param showplot boolean to show the plot
-     * @return an array containing the parameters of the fit
+     * @param y array containing profile data
      */
-    public static double[] LinearFit(double[] xi, double[] yi, boolean showplot) {
-        CurveFitter cf = new CurveFitter(xi, yi);
-        cf.setStatusAndEsc("Optimization: Iteration ", true);
-        cf.doFit(0, false);
-        if (showplot) {
-            plot(cf, false);
-        }
-        return cf.getParams();
-    }
-
-    /**
-     * 
-     * Default using of Linear fit: always plot
-     * @param xi array with x values
-     * @param yi array with y values
-     * @return an array containing the parameters of the fit
-     */
-    public static double[] LinearFit(double[] xi, double[] yi) {
-        return LinearFit(xi, yi, true);
-    }
-
-    /**
-     * 
-     * Returns the residual values in a linear fit
-     * @param xi array with x values
-     * @param yi array with y values
-     * @return an array containing the residuals of the fit
-     */
-    public static double[] getResidualsinLinearFit(double[] xi, double[] yi) {
-        CurveFitter cf = new CurveFitter(xi, yi);
-        cf.setStatusAndEsc("Optimization: Iteration ", true);
-        cf.doFit(0, false);
-        return cf.getResiduals();
-    }
-
-    private static final double fac = 2 * Math.sqrt(2 * Math.log(2));
-
-    /**
-     *
-     * @param xi array with x values
-     * @param yi array with y values
-     * @param showplot boolean to show the plot
-     * @return an array containing the parameters of the fit
-     */
-    public static double[] GaussianFit(double[] xi, double[] yi, boolean showplot) {
-        CurveFitter cf = new CurveFitter(xi, yi);
-        cf.setStatusAndEsc("Optimization: Iteration ", true);
-        cf.doFit(12, false);
-        if (showplot) {
-            plot(cf, false);
-        }
-        return cf.getParams();
-    }
-
-     /**
-     * 
-     * Default using of Gaussian fit: always plot
-     * @param xi array with x values
-     * @param yi array with y values
-     * @return an array containing the parameters of the fit
-     */
-    public static double[] GaussianFit(double[] xi, double[] yi) {
-        return GaussianFit(xi, yi, true);
-    }
-
-    /**
-     * 
-     * @param xi array with x values
-     * @param yi array with y values
-     * @param pixwidth pixel width
-     * @param showplot boolean to show the plot
-     * @return the resolution based on gaussian fit of the data
-     */
-    public static double resolution(double[] xi, double[] yi, double pixwidth, boolean showplot) {
-        double[] params = GaussianFit(xi, yi, showplot);
-        return params[3] * fac * pixwidth;
-    }
-
-    /**
-     * 
-     * Default using of resolution: always plot
-     * @param xi array with x values
-     * @param yi array with y values
-     * @param pixwidth pixel width
-     * @return the resolution based on gaussian fit of the data
-     */
-    public static double resolution(double[] xi, double[] yi, double pixwidth) {
-        return resolution(xi, yi, pixwidth, true);
-    }
-
-    public static double peakpos(double[] xi, double[] yi, boolean showplot) {
-        double[] params = GaussianFit(xi, yi, showplot);
-        return params[2];
-    }
-
-    public static double peakpos(double[] xi, double[] yi) {
-        return peakpos(xi, yi, true);
-    }
-
-    public static int[] findPeaks(double[] yi) {
-        double[] a = Tools.getMinMax(yi);
-        double tolerance = 0.1 * a[1];
-        boolean includeEnds = false;
-        int[] peakpos = MaximumFinder.findMaxima(yi, tolerance, includeEnds);
-        Arrays.sort(peakpos);
-        //PlotProfile(yi);
-        return peakpos;
-    }
-
     public static void PlotProfile(double[] y) {
         double[] x = new double[y.length];
         for (int i = 0; i < y.length; i++) {

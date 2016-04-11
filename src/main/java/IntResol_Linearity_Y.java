@@ -75,7 +75,7 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         int countpeaks = 0;
         int npeaks = 0;
         for (int i = 0; i < nbins; i++) {
-            int[] peakpos = Plotter.findPeaks(counts[i]);
+            int[] peakpos = Fitter.findPeaks(counts[i]);
             if (peakpos.length > npeaks) {
                 npeaks = peakpos.length;
             }
@@ -90,10 +90,10 @@ public class IntResol_Linearity_Y implements PlugInFilter {
                     arr1[k] = counts[i][k + med];
                     x1[k] = k + med;
                 }
-                peakpositions[i][j] = Plotter.peakpos(x1, arr1, false) * vw;
+                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * vw;
                 med = med1;
                 x[i][j] = j;
-                double tresol = Plotter.resolution(x1, arr1, vw, false);
+                double tresol = Fitter.resolution(x1, arr1, vw, false);
                 resol = Math.max(resol, tresol);
                 meanresol += tresol;
                 countpeaks += 1;
@@ -104,9 +104,9 @@ public class IntResol_Linearity_Y implements PlugInFilter {
                 arr[k] = counts[i][k + med];
                 xf[k] = k + med;
             }
-            peakpositions[i][peakpos.length - 1] = Plotter.peakpos(xf, arr, false) * vw;
+            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * vw;
             x[i][peakpos.length - 1] = peakpos.length - 1;
-            double tresol = Plotter.resolution(xf, arr, vw, false);
+            double tresol = Fitter.resolution(xf, arr, vw, false);
             resol = Math.max(resol, tresol);
             meanresol += tresol;
             countpeaks += 1;
@@ -120,7 +120,7 @@ public class IntResol_Linearity_Y implements PlugInFilter {
                 newx[i] = i;
                 newpos[i] = peakpositions[i][j];
             }
-            double[] tresiduals = Plotter.getResidualsinLinearFit(newx, newpos);
+            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos);
             System.arraycopy(tresiduals, 0, residuals, j * nbins, nbins);
         }
         double[] a = Tools.getMinMax(residuals);
@@ -139,7 +139,7 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         rt.addValue("Value",IJ.d2s(a[1], 4, 9));
         rt.incrementCounter();
         rt.addValue("Test","Differential Linearity in Y(mm): ");
-        rt.addValue("Value",IJ.d2s(Plotter.StdDev(residuals), 4, 9));
+        rt.addValue("Value",IJ.d2s(MathUtils.StdDev(residuals), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity in Y");
     }
