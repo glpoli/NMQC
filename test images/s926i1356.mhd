@@ -1,0 +1,7 @@
+ObjectType = Image
+NDims = 3
+BinaryData = True
+DimSize = 64 64 1920
+ElementSize = 6.798 6.798 1
+ElementType = MET_USHORT
+ElementDataFile = s926i1356.img
