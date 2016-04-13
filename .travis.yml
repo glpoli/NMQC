@@ -6,4 +6,4 @@ script:
 env:
   matrix:
     MAVEN_PASS:
-	  secure="p1zSOspT+77dgdhilv4Q/vMJqJTeCc5UMda/n/UJIlI="
+      secure: "p1zSOspT+77dgdhilv4Q/vMJqJTeCc5UMda/n/UJIlI="
