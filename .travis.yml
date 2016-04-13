@@ -5,4 +5,4 @@ script:
 - mvn -U -Pdeploy-to-imagej clean deploy --settings settings.xml
 env:
   matrix:
-    secure: WUX/u0iIb2/Lht7d9eE5ZIgJ+kKdRBF5TVqwLv7BAWo=
+  - secure: WUX/u0iIb2/Lht7d9eE5ZIgJ+kKdRBF5TVqwLv7BAWo=
