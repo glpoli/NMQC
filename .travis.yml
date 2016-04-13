@@ -5,4 +5,4 @@ script:
 - mvn -U -Pdeploy-to-imagej clean deploy --settings settings.xml
 env:
   matrix:
-  - secure: WUX/u0iIb2/Lht7d9eE5ZIgJ+kKdRBF5TVqwLv7BAWo=
+  - secure:  IDfC1E5+Y5ahl++lHyChZJyMYOveOAmYL2Q7OhmSJkuoLuGbc6yf1mj5QN8CECsF3Meps9q53ujYE6wXuExjiUOpOMQx93Gei2MNUOyi/OyheSpH5BzeVMyNhHL9xJqYtUXSaqEU12Jwqj6Gg+0mjmcMU23xGPjJfFcncjyW2yTKBq+0twtDe7rZ9fx+7CjZoM+c1+tG8uJFHF1akSFNsj399pW4Yg5ZoEUBVM3yKinB6ygRH2QvsI+qUgzDmmBlNwuOBTuNYtk23+TgT88h4mVUYeH+ynSIk1PZ7KR8lQmOyRFxl0Bm2Zz9U2MqxUs6M79DGKOCj+CxRAGEFOmXWfpc5P2ehdcLX+tQUf2Y49WKzM2D123RhV9Nx5w+lX7UacnZZYKVnPt7/A1mvnFP8onwNhTCvwJzsQcXO3xuJs439m/zFN9+kd8NJFpNUGKtpvWzmEWNT3ONeSK4f44zibCHZM8hZAp9gu96zY7L2hLQOi48YdzCqPWH5rUj7JT+mt/dMmgKVKm74KR6ZmkFtyO0V8u6V1Pde5t44yyFT8ZswXbTTvlKKT/mY/KgqUSZYgKRX3rN9uLdMdvI5336qzyhdVp+a0EZLL+4Psfg4ZXb+yjfvetLW5DEWxf4Y/CVg1baql6xBr3ZURhaVLV6jDKj/3yOMPoQA1pw0PMaAHk=
