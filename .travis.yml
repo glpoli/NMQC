@@ -5,4 +5,5 @@ script:
 - mvn -U -Pdeploy-to-imagej clean deploy --settings settings.xml
 env:
   matrix:
-    MAVEN_PASS=p1zSOspT+77dgdhilv4Q/vMJqJTeCc5UMda/n/UJIlI=
+    MAVEN_PASS:
+	  secure="p1zSOspT+77dgdhilv4Q/vMJqJTeCc5UMda/n/UJIlI="
