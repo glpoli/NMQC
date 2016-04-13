@@ -1,1 +1,8 @@
 language: java
+jdk:
+- oraclejdk8
+script:
+- mvn -U -Pdeploy-to-imagej clean deploy --settings settings.xml
+env:
+	matrix:
+		MAVEN_PASS=D0I/sNJHN3mACzzhFUjFi6coCYj2RBAefjhZ+u3hoDM=
