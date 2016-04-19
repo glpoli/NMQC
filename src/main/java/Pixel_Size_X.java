@@ -125,7 +125,8 @@ public class Pixel_Size_X implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" About Pixel Size in X...",
-                "Este plugin es para hallar el tamano del pixel en X.");
+        IJ.showMessage("About Pixel Size in X...",
+                "Este plugin determina el tamano del pixel en el eje X.\n\n"
+              + "This plugin determines the absolute size of the pixel in the X-axis");
     }
 }

@@ -122,6 +122,7 @@ public class Spatial_Resol_Y implements PlugInFilter {
 
     void showAbout() {
         IJ.showMessage("About Spatial Resolution...",
-                "Este plugin es para hallar la resolucion espacial.");
+                "Este plugin determina la resolucion espacial en el eje Y de la imagen.\n\n"
+              + "This plugin calculates the Spatial Resolution in the Y-axis of the image.");
     }
 }

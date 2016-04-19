@@ -73,7 +73,8 @@ public class C_O_R implements PlugInFilter {
             cmx[z - 1] = is.xCenterOfMass * vw;
             cmy[z - 1] = is.yCenterOfMass * vh;
         }
-
+        
+        //To determinate the offset in X
         CurveFitter cf = new CurveFitter(it, cmx);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
         java.lang.String equation = "y = a + b * sin(c * x + d)";
@@ -127,8 +128,8 @@ public class C_O_R implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" About COR...",
-                "Para determinar el centro de rotación de una cámara gamma.\n"+
-                "To determinate the center of rotation of gamma camera");
+        IJ.showMessage("About COR...",
+                "Este plugin determina el corrimiento del centro de rotación de una cámara gamma.\n\n"
+               +"This plugin determines the offset of the center of rotation of gamma camera");
     }
 }

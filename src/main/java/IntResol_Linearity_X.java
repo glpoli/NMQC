@@ -160,9 +160,9 @@ public class IntResol_Linearity_X implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" About Intrinsic Resolution and Linearity...",
+        IJ.showMessage("About Intrinsic Resolution and Linearity...",
                 "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en el eje X en mm\n"
-                + " y determina la linealidad absoluta y diferencial en el eje X en mm.\n"
+                + " y determina la linealidad absoluta y diferencial en el eje X en mm.\n\n"
                 + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
                 + " and determinate the absolute linearity and differential linearity in X in mm.\n");
     }

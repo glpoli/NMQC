@@ -97,7 +97,7 @@ public class Cardiac_Reslicer implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" About Cardiac Reslicer...",
+        IJ.showMessage("About Cardiac Reslicer...",
                 "This plugin reslice the stack in a gated cardiac study with scatter windows");
     }
 }

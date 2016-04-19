@@ -214,7 +214,6 @@ public class Planar_Uniformity implements PlugInFilter {
         }
         */ // end Dialog
         String choice = "Triangle dark"; // No dialog used
-
         ResultsTable rt = new ResultsTable();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {
@@ -238,7 +237,8 @@ public class Planar_Uniformity implements PlugInFilter {
     
     void showAbout() {
         IJ.showMessage("About Planar Uniformity...",
-                "Este plugin es para hallar la uniformidad planar.");
+                "Este plugin determina las uniformidades integral y diferencial de la imagen.\n\n"
+              + "This plugin calculates the integral uniformity and diferencial uniformity of the imagen");
     }
 
 }
