@@ -106,7 +106,7 @@ public class Geometric_Mean implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage(" About Geometric Mean...",
+        IJ.showMessage("About Geometric Mean...",
                 "This plugin calculates the Geometric Mean of two images in an AP view");
     }
 }
