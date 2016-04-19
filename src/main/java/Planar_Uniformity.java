@@ -214,8 +214,7 @@ public class Planar_Uniformity implements PlugInFilter {
         }
         */ // end Dialog
         String choice = "Triangle dark"; // No dialog used
-        /*ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {rt = new ResultsTable();}*/
+
         ResultsTable rt = new ResultsTable();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {
