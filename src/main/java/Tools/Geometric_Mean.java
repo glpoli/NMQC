@@ -88,22 +88,33 @@ public class Geometric_Mean implements PlugInFilter {
                 return;
             }
 
-            float[][] pixels0 = new float[ip1.getWidth()][ip1.getHeight()];
+            int[][] pixels0 = new int[ip1.getWidth()][ip1.getHeight()];
             for (int j = 0; j < h; j++) {
                 for (int i = 0; i < w; i++) {
-                    pixels0[i][j] = (float) Math.sqrt(pixels1[w - i - 1][j] * pixels2[i][j]);
+                    pixels0[i][j] = (int) Math.round(Math.sqrt(pixels1[w - i - 1][j] * pixels2[i][j]));
                 }
             }
 
             FloatProcessor ipt = new FloatProcessor(pixels0);
             ip0.addSlice(ipt);
         }
-
+        
         ImagePlus imp0 = new ImagePlus("Geometric mean.", ip0);
+        if (ns == 1) {
+            new ImageConverter(imp0).convertToGray32();
+        } else {
+            new StackConverter(imp0).convertToGray32();
+        }
         imp0.updateAndDraw();
         imp0.show();
 
     }
+
+    /*public static <T extends RealType<T>> void process(ImagePlus imp) {
+        Img<T> wrapImg = ImageJFunctions.wrapReal(imp);
+        System.out.println("ImgLib2 image type is "
+                + wrapImg.firstElement().getClass().getName());
+    }*/
 
     void showAbout() {
         IJ.showMessage("About Geometric Mean...",

@@ -71,9 +71,10 @@ public class Cardiac_Reslicer implements PlugInFilter {
         for (int i = 0; i < sctwin; i++) {
             scatter[i] = new ImageStack(ip.getWidth(), ip.getHeight());
         }
-
-        for (int z = 1; z <= ns;) {
-            imp.setSlice(z);
+        
+        int z = 1;
+        imp.setSlice(z);
+        while (z <= ns) {
             for (int i = 0; i < sctwin; i++) {
                 for (int j = 0; j < views; j++) {
                     scatter[i].addSlice(ip.convertToShortProcessor());

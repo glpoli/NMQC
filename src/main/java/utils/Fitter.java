@@ -68,7 +68,7 @@ public class Fitter {
         return cf.getResiduals();
     }
 
-    private static final double fac = 2 * Math.sqrt(2 * Math.log(2));
+    private static final double FAC = 2 * Math.sqrt(2 * Math.log(2));
 
     /**
      *
@@ -108,7 +108,7 @@ public class Fitter {
      */
     public static double resolution(double[] xi, double[] yi, double pixwidth, boolean showplot) {
         double[] params = GaussianFit(xi, yi, showplot);
-        return params[3] * fac * pixwidth;
+        return params[3] * FAC * pixwidth;
     }
 
     /**

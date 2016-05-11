@@ -24,6 +24,9 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 
+//@String(label = "Select threshold method", choices = AutoThresholder.getMethods())  method 
+//@Boolean(label = "Dark Background")  dark
+
 /**
  *
  * @author alex
@@ -59,7 +62,8 @@ public class Planar_Uniformity implements PlugInFilter {
     /**
      *
      * @param imp The active image
-     * @param Method The method to calculate boundary, one of AutoThresholder.Method.values()
+     * @param Method The method to calculate boundary, one of
+     * AutoThresholder.Method.values()
      * @param cutoff The cuttof to shrink boundary poligon
      */
     private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
@@ -212,7 +216,8 @@ public class Planar_Uniformity implements PlugInFilter {
         if (darkb) {
             choice += " dark";
         }
-        */ // end Dialog
+         */ // end Dialog 
+       // String choice = !darkb ? choice : choice + " dark";
         String choice = "Triangle dark"; // No dialog used
         ResultsTable rt = new ResultsTable();
         RoiManager RM = RoiManager.getInstance();
@@ -234,11 +239,11 @@ public class Planar_Uniformity implements PlugInFilter {
         RM.runCommand(imp, "Show All");
         RM.setVisible(false);
     }
-    
+
     void showAbout() {
         IJ.showMessage("About Planar Uniformity...",
                 "Este plugin determina las uniformidades integral y diferencial de la imagen.\n\n"
-              + "This plugin calculates the integral uniformity and diferencial uniformity of the imagen");
+                + "This plugin calculates the integral uniformity and diferencial uniformity of the imagen");
     }
 
 }
