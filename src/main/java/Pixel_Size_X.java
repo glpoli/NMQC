@@ -124,8 +124,8 @@ public class Pixel_Size_X implements PlugInFilter {
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Real Pixel size(cm)", IJ.d2s(size, 4, 9));
-        rt.addValue("Header Pixel size(cm)", IJ.d2s(vw, 4, 9));
+        rt.addValue("Real Pixel size(cm/px)", IJ.d2s(size, 4, 9));
+        rt.addValue("Header Pixel size(cm/px)", IJ.d2s(vw, 4, 9));
         rt.addValue("Difference(%)", IJ.d2s((size-vw)*100/size, 4, 9));
         rt.showRowNumbers(true);
         rt.show("Pixel size in X");

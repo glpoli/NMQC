@@ -148,8 +148,6 @@ public class Planar_Uniformity implements PlugInFilter {
         for (int j = (int) lFOV.getYBase(); j < lFOV.getFloatHeight() + lFOV.getYBase(); j++) {
             for (int i = (int) lFOV.getXBase(); i < lFOV.getFloatWidth() + lFOV.getXBase(); i++) {
                 if (lFOV.contains(i, j)) {
-                    float localmin = pixels[i][j];
-                    float localmax = pixels[i][j];
                     if (pixels[i][j] < globalmin) {
                         globalmin = pixels[i][j];
                         minvalue.assign(i, j);
@@ -159,6 +157,8 @@ public class Planar_Uniformity implements PlugInFilter {
                         maxvalue.assign(i, j);
                     }
                     // By rows
+                    float localmin = pixels[i][j];
+                    float localmax = pixels[i][j];
                     for (int k = -2; k <= 2; k++) {
                         int x = Math.max(0, Math.min(w - 1, i + k));
                         if (lFOV.contains(x, j)) {
@@ -172,6 +172,8 @@ public class Planar_Uniformity implements PlugInFilter {
                     }
                     DU = Math.max(DU, ((localmax - localmin) / (localmax + localmin)) * 100);
                     // By columns
+                    localmin = pixels[i][j];
+                    localmax = pixels[i][j];
                     for (int l = -2; l <= 2; l++) {
                         int y = Math.max(0, Math.min(h - 1, j + l));
                         if (lFOV.contains(i, y)) {

@@ -124,8 +124,8 @@ public class Pixel_Size_Y implements PlugInFilter {
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Pixel size(cm)", IJ.d2s(size, 4, 9));
-        rt.addValue("Header Pixel size(cm)", IJ.d2s(vh, 4, 9));
+        rt.addValue("Pixel size(cm/px)", IJ.d2s(size, 4, 9));
+        rt.addValue("Header Pixel size(cm/px)", IJ.d2s(vh, 4, 9));
         rt.addValue("Difference(%)", IJ.d2s((1-(vh/size))*100, 4, 9));
         rt.showRowNumbers(true);
         rt.show("Pixel size in Y");
