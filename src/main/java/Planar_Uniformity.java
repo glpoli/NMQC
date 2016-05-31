@@ -23,9 +23,8 @@ import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
-
-//@String(label = "Select threshold method", choices = AutoThresholder.getMethods())  method 
-//@Boolean(label = "Dark Background")  dark
+import NMQC.utils.FPoint2D;
+import java.awt.Color;
 
 /**
  *
@@ -34,9 +33,9 @@ import ij.plugin.frame.*;
 public class Planar_Uniformity implements PlugInFilter {
 
     private ImagePlus imp;
-    //private final String[] form = {"UFOV", "CFOV"};
-    //private final AutoThresholder.Method[] mMethod = AutoThresholder.Method.values();
-    //private final String[] mMethodStr = AutoThresholder.getMethods(); // Enable this line if you want to enable the dialog
+    private FPoint2D minvalue;
+    private FPoint2D maxvalue;
+    private final int shrinkfactor = 4;
 
     /**
      *
@@ -56,6 +55,8 @@ public class Planar_Uniformity implements PlugInFilter {
         }
 
         this.imp = imp;
+        this.minvalue = new FPoint2D(0, 0);
+        this.maxvalue = new FPoint2D(0, 0);
         return DOES_ALL;
     }
 
@@ -123,7 +124,7 @@ public class Planar_Uniformity implements PlugInFilter {
 
     private void getUniformity(ImagePlus imp, String choice, String sFOV, ResultsTable rt) {
         Binner bin = new Binner();
-        ImageProcessor ip2 = bin.shrink(imp.getProcessor(), 4, 4, Binner.SUM);
+        ImageProcessor ip2 = bin.shrink(imp.getProcessor(), shrinkfactor, shrinkfactor, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
         imp2.deleteRoi();
         double cutoff = sFOV.equals("CFOV") ? 0.75 : 0.95;
@@ -151,9 +152,11 @@ public class Planar_Uniformity implements PlugInFilter {
                     float localmax = pixels[i][j];
                     if (pixels[i][j] < globalmin) {
                         globalmin = pixels[i][j];
+                        minvalue.assign(i, j);
                     }
                     if (pixels[i][j] > globalmax) {
                         globalmax = pixels[i][j];
+                        maxvalue.assign(i, j);
                     }
                     // By rows
                     for (int k = -2; k <= 2; k++) {
@@ -216,34 +219,86 @@ public class Planar_Uniformity implements PlugInFilter {
         if (darkb) {
             choice += " dark";
         }
-         */ // end Dialog 
-       // String choice = !darkb ? choice : choice + " dark";
+         */ // end Dialog
         String choice = "Triangle dark"; // No dialog used
+        /*ResultsTable rt = ResultsTable.getResultsTable();
+        if (rt == null) {rt = new ResultsTable();}*/
         ResultsTable rt = new ResultsTable();
         RoiManager RM = RoiManager.getInstance();
         if (RM == null) {
             RM = new RoiManager();
         }
         RM.reset();
-        Roi FOV;
-        String sFOV = "UFOV";
-        FOV = getThreshold(imp, choice, 0.95);
-        RM.addRoi(FOV);
-        getUniformity(imp, choice, sFOV, rt);
-        sFOV = "CFOV";
-        FOV = getThreshold(imp, choice, 0.75);
-        RM.addRoi(FOV);
-        getUniformity(imp, choice, sFOV, rt);
-        rt.showRowNumbers(true);
-        rt.show("Planar uniformity");
+
+        int ns = imp.getStackSize();
+        if (ns == 1) { // Planar Uniformity
+            Roi FOV;
+            String sFOV = "UFOV";
+            FOV = getThreshold(imp, choice, 0.95);
+            RM.addRoi(FOV);
+            getUniformity(imp, choice, sFOV, rt);
+            sFOV = "CFOV";
+            FOV = getThreshold(imp, choice, 0.75);
+            RM.addRoi(FOV);
+            getUniformity(imp, choice, sFOV, rt);
+            PointRoi minPointRoi = new PointRoi(minvalue.X * shrinkfactor, minvalue.Y * shrinkfactor);
+            minPointRoi.setStrokeColor(Color.blue);
+            PointRoi maxPointRoi = new PointRoi(maxvalue.X * shrinkfactor, maxvalue.Y * shrinkfactor);
+            maxPointRoi.setStrokeColor(Color.red);
+            RM.addRoi(minPointRoi);
+            RM.addRoi(maxPointRoi);
+            rt.showRowNumbers(true);
+            rt.show("Planar Uniformity");
+        } else if (ns > 1) { // Tomographic Uniformity
+            GenericDialog gd = new GenericDialog("Tomographic Uniformity.");
+            gd.addNumericField("Entre el corte inicial", 1, 0);
+            gd.addNumericField("Entre el corte final", ns, 0);
+            gd.showDialog();
+            if (gd.wasCanceled()) {
+                return;
+            }
+            int sinit = (int) Math.round(gd.getNextNumber());
+            int send = (int) Math.round(gd.getNextNumber());
+            float[][] ip2mat = new float[ip.getWidth()][ip.getHeight()];
+            for (int z = sinit; z <= send; z++) {
+                imp.setSlice(z);
+                float[][] pixels = ip.getFloatArray();
+                for (int i = 0; i < ip.getWidth(); i++) {
+                    for (int j = 0; j < ip.getHeight(); j++) {
+                        ip2mat[i][j] += pixels[i][j];
+                    }
+                }
+            }
+            for (int i = 0; i < ip.getWidth(); i++) {
+                for (int j = 0; j < ip.getHeight(); j++) {
+                    ip2mat[i][j] /= send - sinit + 1;
+                }
+            }
+            FloatProcessor ip2 = new FloatProcessor(ip2mat);
+            ImagePlus imp2 = new ImagePlus("Mean Image",ip2);
+            Roi FOV;
+            String sFOV = "UFOV";
+            FOV = getThreshold(imp2, choice, 0.95);
+            RM.addRoi(FOV);
+            getUniformity(imp2, choice, sFOV, rt);
+            PointRoi minPointRoi = new PointRoi(minvalue.X * shrinkfactor, minvalue.Y * shrinkfactor);
+            minPointRoi.setStrokeColor(Color.blue);
+            PointRoi maxPointRoi = new PointRoi(maxvalue.X * shrinkfactor, maxvalue.Y * shrinkfactor);
+            maxPointRoi.setStrokeColor(Color.red);
+            RM.addRoi(minPointRoi);
+            RM.addRoi(maxPointRoi);
+            rt.showRowNumbers(true);
+            rt.show("Tomographic Uniformity");
+        }
         RM.runCommand(imp, "Show All");
         RM.setVisible(false);
     }
 
     void showAbout() {
         IJ.showMessage("About Planar Uniformity...",
-                "Este plugin determina las uniformidades integral y diferencial de la imagen.\n\n"
-                + "This plugin calculates the integral uniformity and diferencial uniformity of the imagen");
+                "Este plugin es para hallar la uniformidad planar de imágenes planas.\n"
+                +"También halla la uniformidad tomográfica en reconstrucciones 3D.\n"
+                +"El tipo de imagen es detectado automáticamente");
     }
 
 }

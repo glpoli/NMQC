@@ -116,17 +116,23 @@ public class Pixel_Size_Y implements PlugInFilter {
         }
         double d = gd.getNextNumber();
         double size = d / c;
+        
+        Calibration cal = imp.getCalibration();
+        double vw = cal.pixelWidth/10;
+        double vh = cal.pixelHeight/10;
+        double vd = cal.pixelDepth/10;
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
         rt.addValue("Pixel size(cm)", IJ.d2s(size, 4, 9));
+        rt.addValue("Header Pixel size(cm)", IJ.d2s(vh, 4, 9));
+        rt.addValue("Difference(%)", IJ.d2s((1-(vh/size))*100, 4, 9));
         rt.showRowNumbers(true);
         rt.show("Pixel size in Y");
     }
 
     void showAbout() {
-        IJ.showMessage("About Pixel Size in Y...",
-                "Este plugin determina el tamano del pixel en el eje Y.\n\n"
-              + "This plugin determines the absolute size of the pixel in the Y-axis");
+        IJ.showMessage("  About Pixel Size in Y...",
+                "Este plugin es para hallar el tamano del pixel en Y.");
     }
 }
