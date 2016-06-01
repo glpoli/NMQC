@@ -30,7 +30,6 @@ public class Spatial_Resol_Y implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
-    private final int NEMAWIDTH = 5;
 
     /**
      *
@@ -73,10 +72,10 @@ public class Spatial_Resol_Y implements PlugInFilter {
         double[] suma = new double[(int) (roi.getFloatHeight())];
         
         int init, fin, width;
-        if (roi.getFloatWidth() > NEMAWIDTH) {
-            init = (int) Math.floor((roi.getFloatWidth() - NEMAWIDTH) / 2);
-            fin = init + NEMAWIDTH;
-            width = NEMAWIDTH;
+        if (roi.getFloatWidth() > Constants.NEMAWIDTH) {
+            init = (int) Math.floor((roi.getFloatWidth() - Constants.NEMAWIDTH) / 2);
+            fin = init + Constants.NEMAWIDTH;
+            width = Constants.NEMAWIDTH;
         }
         else {
             init = 0;
@@ -94,23 +93,7 @@ public class Spatial_Resol_Y implements PlugInFilter {
             suma[i] = suma[i] / width;
         }
 
-        int[] peakpos = Fitter.findPeaks(suma);
-        if (peakpos.length < 2) {
-            IJ.error("Two bars phantom needed");
-            return;
-        }
-        FPoint2D maximo1 = new FPoint2D(peakpos[0], suma[peakpos[0]]);
-        FPoint2D maximo2 = new FPoint2D(maximo1);
-        for (int value : peakpos) {
-            if (suma[value] > maximo1.Y) {
-                maximo2.assign(maximo1);
-                maximo1.assign(value, suma[value]);
-            } else if (suma[value] > maximo2.Y && suma[value] < maximo1.Y) {
-                maximo2.assign(value, suma[value]);
-            }
-        }
-
-        int med = (int) (0.5 * (maximo1.X + maximo2.X));
+        int med = Constants.findMiddlePointinTwoPeaks(suma);
         double[] arr1 = new double[med];
         double[] x1 = new double[med];
         double[] arr2 = new double[(int) roi.getFloatHeight() - med + 1];
@@ -124,8 +107,8 @@ public class Spatial_Resol_Y implements PlugInFilter {
             x2[i - med] = i;
         }
 
-        double res1 = Fitter.resolution(x1, arr1, vh);
-        double res2 = Fitter.resolution(x2, arr2, vh);
+        double res1 = Fitter.resolution(x1, arr1, vh, false);
+        double res2 = Fitter.resolution(x2, arr2, vh, false);
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();

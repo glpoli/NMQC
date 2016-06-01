@@ -30,7 +30,6 @@ public class Pixel_Size_X implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
-    private final int NEMAWIDTH = 5;
 
     /**
      *
@@ -68,10 +67,10 @@ public class Pixel_Size_X implements PlugInFilter {
         double[] suma = new double[(int) roi.getFloatWidth()];
 
         int init, fin, width;
-        if (roi.getFloatHeight() > NEMAWIDTH) {
-            init = (int) Math.floor((roi.getFloatHeight() - NEMAWIDTH) / 2);
-            fin = init + NEMAWIDTH;
-            width = NEMAWIDTH;
+        if (roi.getFloatHeight() > Constants.NEMAWIDTH) {
+            init = (int) Math.floor((roi.getFloatHeight() - Constants.NEMAWIDTH) / 2);
+            fin = init + Constants.NEMAWIDTH;
+            width = Constants.NEMAWIDTH;
         } else {
             init = 0;
             fin = (int) Math.floor(roi.getFloatHeight());
@@ -88,23 +87,7 @@ public class Pixel_Size_X implements PlugInFilter {
             suma[i] = suma[i] / width;
         }
 
-        int[] peakpos = Fitter.findPeaks(suma);
-        if (peakpos.length < 2) {
-            IJ.error("Two bars phantom needed");
-            return;
-        }
-        FPoint2D maximo1 = new FPoint2D(peakpos[0], suma[peakpos[0]]);
-        FPoint2D maximo2 = new FPoint2D(maximo1);
-        for (int value : peakpos) {
-            if (suma[value] > maximo1.Y) {
-                maximo2.assign(maximo1);
-                maximo1.assign(value, suma[value]);
-            } else if (suma[value] > maximo2.Y && suma[value] < maximo1.Y) {
-                maximo2.assign(value, suma[value]);
-            }
-        }
-
-        int med = (int) (0.5 * (maximo1.X + maximo2.X));
+        int med = Constants.findMiddlePointinTwoPeaks(suma);
         double[] arr1 = new double[med];
         double[] x1 = new double[med];
         double[] arr2 = new double[(int) roi.getFloatWidth() - med + 1];
@@ -117,8 +100,8 @@ public class Pixel_Size_X implements PlugInFilter {
             arr2[i - med] = suma[i];
             x2[i - med] = i;
         }
-        double c1 = Fitter.peakpos(x1, arr1, false);
-        double c2 = Fitter.peakpos(x2, arr2, false);
+        double c1 = Fitter.peakpos(x1, arr1, true);
+        double c2 = Fitter.peakpos(x2, arr2, true);
 
         double c = c2 - c1;
 
