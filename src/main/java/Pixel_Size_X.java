@@ -100,8 +100,8 @@ public class Pixel_Size_X implements PlugInFilter {
             arr2[i - med] = suma[i];
             x2[i - med] = i;
         }
-        double c1 = Fitter.peakpos(x1, arr1, true);
-        double c2 = Fitter.peakpos(x2, arr2, true);
+        double c1 = Fitter.peakpos(x1, arr1, false);
+        double c2 = Fitter.peakpos(x2, arr2, false);
 
         double c = c2 - c1;
 
