@@ -16,7 +16,10 @@ Current capabilities
   4. Spatial Resolution
     - Image must be a 2 lines phantom
     - User must provide a ROI containing ONLY the relevant part of the image
-  5. Intrinsic Resolution and Linearity
+  5. Four Bar Phantom
+    - Image must be a Four bar phantom adquisition
+	- User must provide a ROI containing the whole phantom and aproximately centered on it
+  6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom
     - User must provide a ROI containing ONLY the relevant part of the image
     - Limitation: the ROI cant include octogonal or circular shapes
