@@ -35,7 +35,6 @@ public class Planar_Uniformity implements PlugInFilter {
     private ImagePlus imp;
     private FPoint2D minvalue;
     private FPoint2D maxvalue;
-    private final int shrinkfactor = 4;
 
     /**
      *
@@ -122,7 +121,7 @@ public class Planar_Uniformity implements PlugInFilter {
         return UFOV;
     }
 
-    private void getUniformity(ImagePlus imp, String choice, String sFOV, ResultsTable rt) {
+    private void getUniformity(ImagePlus imp, String choice, String sFOV, int shrinkfactor, ResultsTable rt) {
         Binner bin = new Binner();
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), shrinkfactor, shrinkfactor, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
@@ -231,18 +230,20 @@ public class Planar_Uniformity implements PlugInFilter {
             RM = new RoiManager();
         }
         RM.reset();
+        int shrinkfactor;
 
         int ns = imp.getStackSize();
         if (ns == 1) { // Planar Uniformity
             Roi FOV;
+            shrinkfactor = 4;
             String sFOV = "UFOV";
             FOV = getThreshold(imp, choice, 0.95);
             RM.addRoi(FOV);
-            getUniformity(imp, choice, sFOV, rt);
+            getUniformity(imp, choice, sFOV, shrinkfactor, rt);
             sFOV = "CFOV";
             FOV = getThreshold(imp, choice, 0.75);
             RM.addRoi(FOV);
-            getUniformity(imp, choice, sFOV, rt);
+            getUniformity(imp, choice, sFOV, shrinkfactor, rt);
             PointRoi minPointRoi = new PointRoi(minvalue.X * shrinkfactor, minvalue.Y * shrinkfactor);
             minPointRoi.setStrokeColor(Color.blue);
             PointRoi maxPointRoi = new PointRoi(maxvalue.X * shrinkfactor, maxvalue.Y * shrinkfactor);
@@ -252,6 +253,7 @@ public class Planar_Uniformity implements PlugInFilter {
             rt.showRowNumbers(true);
             rt.show("Planar Uniformity");
         } else if (ns > 1) { // Tomographic Uniformity
+            shrinkfactor = 1;
             GenericDialog gd = new GenericDialog("Tomographic Uniformity.");
             gd.addNumericField("Entre el corte inicial", 1, 0);
             gd.addNumericField("Entre el corte final", ns, 0);
@@ -282,7 +284,7 @@ public class Planar_Uniformity implements PlugInFilter {
             String sFOV = "UFOV";
             FOV = getThreshold(imp2, choice, 0.95);
             RM.addRoi(FOV);
-            getUniformity(imp2, choice, sFOV, rt);
+            getUniformity(imp2, choice, sFOV, shrinkfactor, rt);
             PointRoi minPointRoi = new PointRoi(minvalue.X * shrinkfactor, minvalue.Y * shrinkfactor);
             minPointRoi.setStrokeColor(Color.blue);
             PointRoi maxPointRoi = new PointRoi(maxvalue.X * shrinkfactor, maxvalue.Y * shrinkfactor);
