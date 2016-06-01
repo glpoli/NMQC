@@ -23,6 +23,11 @@ public class FPoint2D {
         X = xi;
         Y = yi;
     }
+    
+    public FPoint2D(FPoint2D p1) {
+        X = p1.X;
+        Y = p1.Y;
+    }
 
     public void assign(double xi, double yi) {
         X = xi;
