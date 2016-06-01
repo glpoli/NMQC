@@ -30,6 +30,7 @@ public class Pixel_Size_Y implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
+    private final int NEMAWIDTH = 5;
 
     /**
      *
@@ -66,31 +67,45 @@ public class Pixel_Size_Y implements PlugInFilter {
         float[][] pixels = ip.getFloatArray();
         double[] suma = new double[(int) roi.getFloatHeight()];
 
+        int init, fin, width;
+        if (roi.getFloatWidth() > NEMAWIDTH) {
+            init = (int) Math.floor((roi.getFloatWidth() - NEMAWIDTH) / 2);
+            fin = init + NEMAWIDTH;
+            width = NEMAWIDTH;
+        }
+        else {
+            init = 0;
+            fin = (int) Math.floor(roi.getFloatWidth());
+            width = fin;
+        }
+
         for (int j = 0; j < roi.getFloatHeight(); j++) {
-            for (int i = 0; i < roi.getFloatWidth(); i++) {
+            for (int i = init; i <= fin; i++) {
                 suma[j] += pixels[i + (int) roi.getXBase()][j + (int) roi.getYBase()];
             }
         }
 
         for (int i = 0; i < roi.getFloatHeight(); i++) {
-            suma[i] = suma[i] / roi.getFloatWidth();
+            suma[i] = suma[i] / width;
         }
 
-        FPoint2D maximo = new FPoint2D(1, suma[0]);
-        FPoint2D maximo2 = new FPoint2D(0, 0);
-        boolean foundmax = false;
-        for (int i = 2; i < roi.getFloatHeight(); i++) {
-            if (suma[i] > maximo.Y) {
-                maximo.assign(i, suma[i]);
-            }
-            if ((suma[i] <= (0.1) * maximo.Y) && !(foundmax)) {
-                maximo2.assign(maximo);
-                maximo.assign(i, suma[i]);
-                foundmax = true;
+        int[] peakpos = Fitter.findPeaks(suma);
+        if (peakpos.length < 2) {
+            IJ.error("Two bars phantom needed");
+            return;
+        }
+        FPoint2D maximo1 = new FPoint2D(peakpos[0], suma[peakpos[0]]);
+        FPoint2D maximo2 = new FPoint2D(maximo1);
+        for (int value : peakpos) {
+            if (suma[value] > maximo1.Y) {
+                maximo2.assign(maximo1);
+                maximo1.assign(value, suma[value]);
+            } else if (suma[value] > maximo2.Y && suma[value] < maximo1.Y) {
+                maximo2.assign(value, suma[value]);
             }
         }
 
-        int med = (int) (0.5 * (maximo.X + maximo2.X));
+        int med = (int) (0.5 * (maximo1.X + maximo2.X));
         double[] arr1 = new double[med];
         double[] x1 = new double[med];
         double[] arr2 = new double[(int) roi.getFloatHeight() - med + 1];
