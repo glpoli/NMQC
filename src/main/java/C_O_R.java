@@ -120,8 +120,8 @@ public class C_O_R implements PlugInFilter {
         ResultsTable rt = new ResultsTable();
         for (int i = 0; i < 1; i++) {
             rt.incrementCounter();
-            rt.addValue("COR X (cm)", IJ.d2s(b[1], 5, 9));
-            rt.addValue("COR Y (cm)", IJ.d2s(c[1], 5, 9));
+            rt.addValue("COR X (mm)", IJ.d2s(b[1], 5, 9));
+            rt.addValue("COR Y (mm)", IJ.d2s(c[1], 5, 9));
         }
         rt.showRowNumbers(false);
         rt.show("Center of Rotation");

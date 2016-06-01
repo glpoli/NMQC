@@ -114,18 +114,18 @@ public class Pixel_Size_Y implements PlugInFilter {
         if (gd.wasCanceled()) {
             return;
         }
-        double d = gd.getNextNumber();
+        double d = gd.getNextNumber()*10;
         double size = d / c;
         
         Calibration cal = imp.getCalibration();
-        double vw = cal.pixelWidth/10;
-        double vh = cal.pixelHeight/10;
-        double vd = cal.pixelDepth/10;
+        double vw = cal.pixelWidth;
+        double vh = cal.pixelHeight;
+        double vd = cal.pixelDepth;
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Pixel size(cm/px)", IJ.d2s(size, 4, 9));
-        rt.addValue("Header Pixel size(cm/px)", IJ.d2s(vh, 4, 9));
+        rt.addValue("Pixel size(mm/px)", IJ.d2s(size, 4, 9));
+        rt.addValue("Header Pixel size(mm/px)", IJ.d2s(vh, 4, 9));
         rt.addValue("Difference(%)", IJ.d2s((1-(vh/size))*100, 4, 9));
         rt.showRowNumbers(true);
         rt.show("Pixel size in Y");
