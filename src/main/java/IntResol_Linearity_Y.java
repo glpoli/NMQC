@@ -69,7 +69,7 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         double vh = cal.pixelHeight;						
         float[][] pixels = ip.getFloatArray();				
 
-        int nbins = (int) (roi.getFloatHeight() * vh / 30);
+        int nbins = (int) Math.floor(roi.getFloatHeight() * vh / 30);
 
         double[][] counts = new double[nbins][(int) roi.getFloatWidth()];
         double dpos = roi.getFloatHeight() / (nbins - 1);

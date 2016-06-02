@@ -281,8 +281,8 @@ public class Planar_Uniformity implements PlugInFilter {
             FloatProcessor ip2 = new FloatProcessor(ip2mat);
             ImagePlus imp2 = new ImagePlus("Mean Image",ip2);
             Roi FOV;
-            String sFOV = "UFOV";
-            FOV = getThreshold(imp2, choice, 0.95);
+            String sFOV = "CFOV";
+            FOV = getThreshold(imp2, choice, 0.75);
             RM.addRoi(FOV);
             getUniformity(imp2, choice, sFOV, shrinkfactor, rt);
             PointRoi minPointRoi = new PointRoi(minvalue.X * shrinkfactor, minvalue.Y * shrinkfactor);
