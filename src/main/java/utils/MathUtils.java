@@ -41,10 +41,24 @@ public class MathUtils {
      */
     public static double StdDev(double[] array) {
         double suma = 0;
+        double avg = averag(array);
+        for (int i = 0; i < array.length; i++) {
+            suma = suma + (array[i]-avg)*(array[i]-avg);
+        }
+        return Math.sqrt(suma / (array.length * (array.length - 1)));
+    }
+    
+    /**
+     *
+     * @param array
+     * @return the squared sum of the array values
+     */
+    public static double sqrsum(double[] array) {
+        double suma = 0;
         for (int i = 0; i < array.length; i++) {
             suma = suma + array[i] * array[i];
         }
-        return Math.sqrt(suma / (array.length * (array.length - 1)));
+        return suma;
     }
 
 }

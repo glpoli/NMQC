@@ -64,17 +64,17 @@ public class IntResol_Linearity_X implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
-        Calibration cal = imp.getCalibration();				
-        double vw = cal.pixelWidth;							
-        double vh = cal.pixelHeight;						
-        float[][] pixels = ip.getFloatArray();				
+        Calibration cal = imp.getCalibration();
+        double vw = cal.pixelWidth;
+        double vh = cal.pixelHeight;
+        float[][] pixels = ip.getFloatArray();
 
         int nbins = (int) Math.floor(roi.getFloatWidth() * vw / 30);
 
         double[][] counts = new double[nbins][(int) roi.getFloatHeight()];
         double dpos = roi.getFloatWidth() / (nbins - 1);
 
-        for (int j = 0; j < roi.getFloatHeight(); j++) {			
+        for (int j = 0; j < roi.getFloatHeight(); j++) {
             for (int i = 0; i < nbins; i++) {
                 for (int k = 0; k < dpos; k++) {
                     counts[i][j] += pixels[i * k + (int) roi.getXBase()][j + (int) roi.getYBase()];
@@ -141,20 +141,20 @@ public class IntResol_Linearity_X implements PlugInFilter {
         double[] a = Tools.getMinMax(residuals);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Test","Number of bins: ");
-        rt.addValue("Value",nbins);
+        rt.addValue("Test", "Number of bins: ");
+        rt.addValue("Value", nbins);
         rt.incrementCounter();
-        rt.addValue("Test","Worst Intrinsic Resolution in X(mm): ");
-        rt.addValue("Value",IJ.d2s(resol, 4, 9));
+        rt.addValue("Test", "Worst Intrinsic Resolution in X(mm): ");
+        rt.addValue("Value", IJ.d2s(resol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Mean Intrinsic Resolution in X(mm): ");
-        rt.addValue("Value",IJ.d2s(meanresol / countpeaks, 4, 9));
+        rt.addValue("Test", "Mean Intrinsic Resolution in X(mm): ");
+        rt.addValue("Value", IJ.d2s(meanresol / countpeaks, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Absolute Linearity in X(mm): ");
-        rt.addValue("Value",IJ.d2s(a[1], 4, 9));
+        rt.addValue("Test", "Absolute Linearity in X(mm): ");
+        rt.addValue("Value", IJ.d2s(a[1], 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Differential Linearity in X(mm): ");
-        rt.addValue("Value",IJ.d2s(MathUtils.StdDev(residuals), 4, 9));
+        rt.addValue("Test", "Differential Linearity in X(mm): ");
+        rt.addValue("Value", IJ.d2s(Math.sqrt(MathUtils.sqrsum(residuals) / (residuals.length * (residuals.length - 1))), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity in X");
     }

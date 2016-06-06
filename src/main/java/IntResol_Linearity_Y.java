@@ -64,17 +64,17 @@ public class IntResol_Linearity_Y implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
-        Calibration cal = imp.getCalibration();				
-        double vw = cal.pixelWidth;							
-        double vh = cal.pixelHeight;						
-        float[][] pixels = ip.getFloatArray();				
+        Calibration cal = imp.getCalibration();
+        double vw = cal.pixelWidth;
+        double vh = cal.pixelHeight;
+        float[][] pixels = ip.getFloatArray();
 
         int nbins = (int) Math.floor(roi.getFloatHeight() * vh / 30);
 
         double[][] counts = new double[nbins][(int) roi.getFloatWidth()];
         double dpos = roi.getFloatHeight() / (nbins - 1);
 
-        for (int i = 0; i < roi.getFloatWidth(); i++) {			
+        for (int i = 0; i < roi.getFloatWidth(); i++) {
             for (int j = 0; j < nbins; j++) {
                 for (int k = 0; k < dpos; k++) {
                     counts[j][i] += pixels[i + (int) roi.getXBase()][j * k + (int) roi.getYBase()];
@@ -141,20 +141,20 @@ public class IntResol_Linearity_Y implements PlugInFilter {
         double[] a = Tools.getMinMax(residuals);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Test","Number of bins: ");
-        rt.addValue("Value",nbins);
+        rt.addValue("Test", "Number of bins: ");
+        rt.addValue("Value", nbins);
         rt.incrementCounter();
-        rt.addValue("Test","Worst Intrinsic Resolution in Y(mm): ");
-        rt.addValue("Value",IJ.d2s(resol, 4, 9));
+        rt.addValue("Test", "Worst Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Value", IJ.d2s(resol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Mean Intrinsic Resolution in Y(mm): ");
-        rt.addValue("Value",IJ.d2s(meanresol / countpeaks, 4, 9));
+        rt.addValue("Test", "Mean Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Value", IJ.d2s(meanresol / countpeaks, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Absolute Linearity in Y(mm): ");
-        rt.addValue("Value",IJ.d2s(a[1], 4, 9));
+        rt.addValue("Test", "Absolute Linearity in Y(mm): ");
+        rt.addValue("Value", IJ.d2s(a[1], 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test","Differential Linearity in Y(mm): ");
-        rt.addValue("Value",IJ.d2s(MathUtils.StdDev(residuals), 4, 9));
+        rt.addValue("Test", "Differential Linearity in Y(mm): ");
+        rt.addValue("Value", IJ.d2s(Math.sqrt(MathUtils.sqrsum(residuals) / (residuals.length * (residuals.length - 1))), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity in Y");
     }
@@ -162,8 +162,8 @@ public class IntResol_Linearity_Y implements PlugInFilter {
     void showAbout() {
         IJ.showMessage("About Intrinsic Resolution and Linearity...",
                 "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en el eje X en mm\n"
-                 + " y determina la linealidad absoluta y diferencial en el eje Y en mm.\n\n"
-                 + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
-                 + " and determinate the absolute linearity and differential linearity in Y in mm.\n");
+                + " y determina la linealidad absoluta y diferencial en el eje Y en mm.\n\n"
+                + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
+                + " and determinate the absolute linearity and differential linearity in Y in mm.\n");
     }
 }
