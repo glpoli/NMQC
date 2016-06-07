@@ -30,7 +30,7 @@ import ij.util.*;
  * @author alex
  */
 public class Tomographic_Uniformity implements PlugInFilter {
-    
+
     private ImagePlus imp;
 
     /**
@@ -49,7 +49,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-        
+
         this.imp = imp;
         return DOES_ALL;
     }
@@ -102,20 +102,22 @@ public class Tomographic_Uniformity implements PlugInFilter {
         }
         return UFOV;
     }
-    
+
     private void getUniformity(ImagePlus simp, Roi sFOV, ResultsTable rt) {
         ImagePlus limp = simp.duplicate();
         limp.setRoi(sFOV);
         float[][] Pixels = limp.getProcessor().getFloatArray();
         double[] gvector = new double[limp.getWidth()];
-        double rmin = limp.getWidth();
+        int rmin = limp.getWidth();
         FPoint2D center = new FPoint2D(limp.getHeight() / 2, limp.getWidth() / 2);
-        
+
         double DU = 0;
         for (int i = 0; i < 360; i++) {
             int rmax = 0;
             double angle = 2 * Math.PI * i / 360;
-            while (sFOV.contains((int) (center.X + rmax * Math.cos(angle)), (int) (center.Y + rmax * Math.sin(angle)))) {
+            int lX = (int) (center.X + rmax * Math.cos(angle));
+            int lY = (int) (center.Y + rmax * Math.sin(angle));
+            while (sFOV.contains(lX, lY)) {
                 rmax += 1;
             }
             if (rmax < rmin) {
@@ -123,7 +125,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
             }
             double[] vector = new double[rmax];
             for (int j = 0; j < rmax; j++) {
-                vector[j] = Pixels[(int) (center.X + j * Math.cos(angle))][(int) (center.Y + j * Math.sin(angle))];
+                lX = (int) (center.X + j * Math.cos(angle));
+                lY = (int) (center.Y + j * Math.sin(angle));
+                vector[j] = Pixels[lX][lY];
                 gvector[j] += vector[j];
             }
             double[] temp = Tools.getMinMax(vector);
@@ -131,12 +135,14 @@ public class Tomographic_Uniformity implements PlugInFilter {
             double lmax = temp[1];
             DU = Math.max(DU, ((lmax - lmin) / (lmax + lmin)) * 100);
         }
-        
-        double[] temp = Tools.getMinMax(gvector);
+
+        double[] ngvector = new double[rmin];
+        System.arraycopy(gvector, 0, ngvector, 0, rmin);
+        double[] temp = Tools.getMinMax(ngvector);
         double gmax = temp[1];
         double gmin = temp[0];
         double IU = ((gmax - gmin) / (gmax + gmin)) * 100;
-        
+
         rt.addValue("Integral Uniformity", IU);
         rt.addValue("Differential Uniformity", DU);
     }
@@ -166,7 +172,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
         Overlay list = new Overlay();
-        
+
         int ns = imp.getStackSize();
         int sinit;
         int send;
@@ -210,11 +216,11 @@ public class Tomographic_Uniformity implements PlugInFilter {
         rt.show("Tomographic Uniformity");
         imp2.setOverlay(list);
     }
-    
+
     void showAbout() {
         IJ.showMessage("About Tomographic Uniformity...",
                 "Este plugin es para hallar la uniformidad tomográfica en reconstrucciones 3D.\n"
                 + "This plugin finds the tomographic uniformity in 3D reconstructions");
     }
-    
+
 }
