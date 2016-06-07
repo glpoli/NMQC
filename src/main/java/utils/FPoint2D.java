@@ -15,6 +15,8 @@
  */
 package NMQC.utils;
 
+import ij.*;
+
 public class FPoint2D {
 
     public double X, Y;
@@ -23,7 +25,7 @@ public class FPoint2D {
         X = xi;
         Y = yi;
     }
-    
+
     public FPoint2D(FPoint2D p1) {
         X = p1.X;
         Y = p1.Y;
@@ -37,5 +39,9 @@ public class FPoint2D {
     public void assign(FPoint2D p1) {
         X = p1.X;
         Y = p1.Y;
+    }
+
+    public String Print() {
+        return "X: " + IJ.d2s(X, 4, 9) + "; Y: " + IJ.d2s(Y, 4, 9);
     }
 }
