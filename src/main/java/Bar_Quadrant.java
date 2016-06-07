@@ -91,8 +91,10 @@ public class Bar_Quadrant implements PlugInFilter {
 
     void showAbout() {
         IJ.showMessage("About Quadrant Bar Phantom...",
-                "Este plugin determina la resolucion espacial y el MTF en una adquisición de cuadrante.\n\n"
-                + "This plugin calculates the Spatial Resolution and MTF in a quadrant bar phantom.");
+                "Este plugin determina la resolucion espacial y el MTF en una adquisición de cuadrante.\n"
+                + "This plugin calculates the Spatial Resolution and MTF in a quadrant bar phantom.\n\n"
+                + "Hander et al.: Rapid objective measurement of gamma camera resolution.\n"
+                + "Medical Physics, Vol. 24, No. 2, February 1997");
     }
 
 }
