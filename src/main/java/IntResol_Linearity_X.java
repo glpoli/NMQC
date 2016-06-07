@@ -50,7 +50,7 @@ public class IntResol_Linearity_X implements PlugInFilter {
         }
         roi = imp.getRoi();
         if (roi == null) {
-            IJ.error("Selection required");
+            IJ.error("Rectangular selection required");
             return DONE;
         }
         this.imp = imp;
@@ -144,10 +144,10 @@ public class IntResol_Linearity_X implements PlugInFilter {
         rt.addValue("Test", "Number of bins: ");
         rt.addValue("Value", nbins);
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic Resolution in X(mm): ");
+        rt.addValue("Test", "Worst Intrinsic Resolution in Y(mm): ");
         rt.addValue("Value", IJ.d2s(resol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic Resolution in X(mm): ");
+        rt.addValue("Test", "Mean Intrinsic Resolution in Y(mm): ");
         rt.addValue("Value", IJ.d2s(meanresol / countpeaks, 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Absolute Linearity in X(mm): ");

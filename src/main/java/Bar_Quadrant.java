@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package NMQC;
 
 import ij.*;
@@ -63,7 +62,7 @@ public class Bar_Quadrant implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
-        
+
         GenericDialog gd = new GenericDialog("Bar Quadrant Phantom");
         gd.addNumericField("Enter bar width (mm):", 10, 2);
         gd.showDialog();
@@ -75,16 +74,19 @@ public class Bar_Quadrant implements PlugInFilter {
         ImageStatistics is0 = imp.getStatistics();
         double mean = is0.mean;
         double stddev = is0.stdDev;
-        
-        double MTF = Math.sqrt(2*(stddev*stddev-mean))/mean;
-        double FWHM = wd * Math.sqrt((16*Math.log(2)/(Math.PI*Math.PI))*Math.log(1/MTF));
 
-        ResultsTable rt = new ResultsTable();
+        double MTF = Math.sqrt(2 * (stddev * stddev - mean)) / mean;
+        double FWHM = wd * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / MTF));
+
+        ResultsTable rt = ResultsTable.getResultsTable();
+        if (rt == null) {
+            rt = new ResultsTable();
+        }
         rt.incrementCounter();
         rt.addValue("MTF", IJ.d2s(MTF, 5, 9));
         rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
         rt.showRowNumbers(true);
-        rt.show("Quadrant bar phantom: "+imp.getTitle());
+        rt.show("Quadrant bar phantom: " + imp.getTitle());
     }
 
     void showAbout() {

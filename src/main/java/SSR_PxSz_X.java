@@ -49,7 +49,7 @@ public class SSR_PxSz_X implements PlugInFilter {
         }
         roi = imp.getRoi();
         if (roi == null) {
-            IJ.error("Selection required");
+            IJ.error("Rectangular selection required");
             return DONE;
         }
         this.imp = imp;
