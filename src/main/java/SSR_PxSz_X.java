@@ -26,7 +26,7 @@ import NMQC.utils.*;
  *
  * @author alex
  */
-public class Spatial_Resol_X implements PlugInFilter {
+public class SSR_PxSz_X implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
@@ -108,18 +108,40 @@ public class Spatial_Resol_X implements PlugInFilter {
 
         double res1 = Fitter.resolution(x1, arr1, vw, false);
         double res2 = Fitter.resolution(x2, arr2, vw, false);
+        
+        double c1 = Fitter.peakpos(x1, arr1, false);
+        double c2 = Fitter.peakpos(x2, arr2, false);
 
-        ResultsTable rt = new ResultsTable();
-        rt.incrementCounter();
-        rt.addValue("Res1(mm)", res1);
-        rt.addValue("Res2(mm)", res2);
-        rt.showRowNumbers(true);
-        rt.show("Spatial resolution in X");
+        double c = c2 - c1;
+
+        GenericDialog gd = new GenericDialog("Pixel Size in X");
+        gd.addNumericField("Enter distance between sources (cm):", 10, 2);
+        gd.showDialog();
+        if (gd.wasCanceled()) {
+            return;
+        }
+        double d = gd.getNextNumber()*10;
+        double size = d / c;
+        
+        ResultsTable rt1 = new ResultsTable();
+        rt1.incrementCounter();
+        rt1.addValue("Real Pixel size(mm/px)", IJ.d2s(size, 4, 9));
+        rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(vw, 4, 9));
+        rt1.addValue("Difference(%)", IJ.d2s((size-vw)*100/size, 4, 9));
+        rt1.showRowNumbers(true);
+        rt1.show("Pixel size in X");
+
+        ResultsTable rt2 = new ResultsTable();
+        rt2.incrementCounter();
+        rt2.addValue("Res1(mm)", res1);
+        rt2.addValue("Res2(mm)", res2);
+        rt2.showRowNumbers(true);
+        rt2.show("Spatial resolution in X");
     }
 
     void showAbout() {
-        IJ.showMessage("About Spatial Resolution...",
-                "Este plugin determina la resolucion espacial en el eje X de la imagen.\n\n"
-                + "This plugin calculates the Spatial Resolution in the X-axis of the image.");
+        IJ.showMessage("About Spatial Resolution and Pixel Size X...",
+                "Este plugin determina la resolucion espacial y el tamaño del pixel en el eje X de la imagen.\n\n"
+                + "This plugin calculates the System Spatial Resolution and the Pixel Size in the X-axis of the image.");
     }
 }
