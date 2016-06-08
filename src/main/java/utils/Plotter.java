@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package NMQC.utils;
+package utils;
 
 import ij.*;
 import ij.gui.*;

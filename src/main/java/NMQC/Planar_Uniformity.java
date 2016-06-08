@@ -23,7 +23,7 @@ import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
-import NMQC.utils.FPoint2D;
+import utils.FPoint2D;
 import java.awt.Color;
 import java.util.*;
 
@@ -85,7 +85,7 @@ public class Planar_Uniformity implements PlugInFilter {
         double stddev = is1.stdDev;
         float pixelshrink = -1;
         Roi troi = roi;
-        while (stddev>0.25*mean) {
+        while (stddev>0.1*mean) {
             troi = RoiEnlarger.enlarge(roi, pixelshrink); 
             pixelshrink -= 1;
             imp2.setRoi(troi);

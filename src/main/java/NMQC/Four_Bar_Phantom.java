@@ -20,7 +20,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
-import NMQC.utils.*;
+import utils.*;
 
 /**
  *

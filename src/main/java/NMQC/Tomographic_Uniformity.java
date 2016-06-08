@@ -22,7 +22,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
-import NMQC.utils.FPoint2D;
+import utils.FPoint2D;
 import ij.util.*;
 
 /**
