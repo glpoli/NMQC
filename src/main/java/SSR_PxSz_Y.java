@@ -26,7 +26,7 @@ import NMQC.utils.*;
  *
  * @author alex
  */
-public class Pixel_Size_Y implements PlugInFilter {
+public class SSR_PxSz_Y implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
@@ -49,7 +49,7 @@ public class Pixel_Size_Y implements PlugInFilter {
         }
         roi = imp.getRoi();
         if (roi == null) {
-            IJ.error("Selection required");
+            IJ.error("Rectangular selection required");
             return DONE;
         }
         this.imp = imp;
@@ -63,9 +63,14 @@ public class Pixel_Size_Y implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
+        //int w = ip.getWidth();
+        //int h = ip.getHeight();
+        Calibration cal = imp.getCalibration();
+        //double vw = cal.pixelWidth;
+        double vh = cal.pixelHeight;
         float[][] pixels = ip.getFloatArray();
-        double[] suma = new double[(int) roi.getFloatHeight()];
-
+        double[] suma = new double[(int) (roi.getFloatHeight())];
+        
         int init, fin, width;
         if (roi.getFloatWidth() > Constants.NEMAWIDTH) {
             init = (int) Math.floor((roi.getFloatWidth() - Constants.NEMAWIDTH) / 2);
@@ -101,6 +106,10 @@ public class Pixel_Size_Y implements PlugInFilter {
             arr2[i - med] = suma[i];
             x2[i - med] = i;
         }
+
+        double res1 = Fitter.resolution(x1, arr1, vh, false);
+        double res2 = Fitter.resolution(x2, arr2, vh, false);
+        
         double c1 = Fitter.peakpos(x1, arr1, false);
         double c2 = Fitter.peakpos(x2, arr2, false);
 
@@ -115,22 +124,25 @@ public class Pixel_Size_Y implements PlugInFilter {
         double d = gd.getNextNumber()*10;
         double size = d / c;
         
-        Calibration cal = imp.getCalibration();
-        double vw = cal.pixelWidth;
-        double vh = cal.pixelHeight;
-        double vd = cal.pixelDepth;
+        ResultsTable rt1 = new ResultsTable();
+        rt1.incrementCounter();
+        rt1.addValue("Pixel size(mm/px)", IJ.d2s(size, 4, 9));
+        rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(vh, 4, 9));
+        rt1.addValue("Difference(%)", IJ.d2s((1-(vh/size))*100, 4, 9));
+        rt1.showRowNumbers(true);
+        rt1.show("Pixel size in Y");
 
-        ResultsTable rt = new ResultsTable();
-        rt.incrementCounter();
-        rt.addValue("Pixel size(mm/px)", IJ.d2s(size, 4, 9));
-        rt.addValue("Header Pixel size(mm/px)", IJ.d2s(vh, 4, 9));
-        rt.addValue("Difference(%)", IJ.d2s((1-(vh/size))*100, 4, 9));
-        rt.showRowNumbers(true);
-        rt.show("Pixel size in Y");
+        ResultsTable rt2 = new ResultsTable();
+        rt2.incrementCounter();
+        rt2.addValue("Res1(mm)", res1);
+        rt2.addValue("Res2(mm)", res2);
+        rt2.showRowNumbers(true);
+        rt2.show("Spatial resolution in Y");
     }
 
     void showAbout() {
-        IJ.showMessage("  About Pixel Size in Y...",
-                "Este plugin es para hallar el tamano del pixel en Y.");
+        IJ.showMessage("About Spatial Resolution and Pixel Size Y...",
+                "Este plugin determina la resolucion espacial y el tamaño del pixel en el eje Y de la imagen.\n\n"
+              + "This plugin calculates the System Spatial Resolution and the Pixel Size in the Y-axis of the image.");
     }
 }

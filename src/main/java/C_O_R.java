@@ -21,6 +21,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
 import NMQC.utils.*;
+import ij.io.*;
 
 /**
  *
@@ -70,10 +71,10 @@ public class C_O_R implements PlugInFilter {
             imp.setSlice(z);
             it[z - 1] = z;
             ImageStatistics is = ip.getStatistics();
-            cmx[z - 1] = is.xCenterOfMass * vw;
-            cmy[z - 1] = is.yCenterOfMass * vh;
+            cmx[z - 1] = is.xCenterOfMass;
+            cmy[z - 1] = is.yCenterOfMass;
         }
-        
+
         //To determinate the offset in X
         CurveFitter cf = new CurveFitter(it, cmx);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
@@ -120,16 +121,24 @@ public class C_O_R implements PlugInFilter {
         ResultsTable rt = new ResultsTable();
         for (int i = 0; i < 1; i++) {
             rt.incrementCounter();
-            rt.addValue("COR X (mm)", IJ.d2s(b[1], 5, 9));
-            rt.addValue("COR Y (mm)", IJ.d2s(c[1], 5, 9));
+            rt.addValue("Test", "COR X");
+            rt.addValue("px", IJ.d2s(b[1], 5, 9));
+            rt.addValue("mm", IJ.d2s(b[1] * vw, 5, 9));
+            rt.incrementCounter();
+            rt.addValue("Test", "COR Y");
+            rt.addValue("px", IJ.d2s(c[1], 5, 9));
+            rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
         }
         rt.showRowNumbers(false);
         rt.show("Center of Rotation");
+        
+        //Conjugate views
+        
     }
 
     void showAbout() {
         IJ.showMessage("About COR...",
                 "Este plugin determina el corrimiento del centro de rotación de una cámara gamma.\n\n"
-               +"This plugin determines the offset of the center of rotation of gamma camera");
+                + "This plugin determines the offset of the center of rotation of gamma camera");
     }
 }

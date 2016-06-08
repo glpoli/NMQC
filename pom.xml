@@ -8,13 +8,13 @@
 	<parent>
 		<groupId>net.imagej</groupId>
 		<artifactId>pom-imagej</artifactId>
-		<version>7.0.0</version>
+		<version>15.7.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>sc.fiji</groupId>
 	<artifactId>NMQC_</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<name>plugins/NMQC.jar</name>
 	<description>A Maven project implementing Nuclear Medicine Quality Control utilities</description>

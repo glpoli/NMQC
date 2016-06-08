@@ -19,7 +19,10 @@ Current capabilities
   5. Four Bar Phantom
     - Image must be a Four bar phantom adquisition
 	- User must provide a ROI containing the whole phantom and aproximately centered on it
-  6. Intrinsic Resolution and Linearity
+  6. Quadrant Bar Phantom
+    - Image must be a Quadrant Bar acquisition
+    - Use must provide a ROI containing a relevant portion of ONLY one quadrant 	
+  7. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom
     - User must provide a ROI containing ONLY the relevant part of the image
     - Limitation: the ROI cant include octogonal or circular shapes
