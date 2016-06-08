@@ -101,13 +101,16 @@ public class Planar_Uniformity implements PlugInFilter {
         //Final shrink, the area of final roi shall be a fraction of current area
         pixelshrink = -1;
         Roi UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-        double area0 = UFOV.getStatistics().area;
-        double area1 = area0;
-        double UFOVarea = cutoff * cutoff * area0;
-        while (area1 > UFOVarea) {
+        double theight = roi.getBounds().height;
+        double twidth = roi.getBounds().width;
+        double tarea = cutoff * theight * twidth;
+        double lheight = UFOV.getBounds().height;
+        double lwidth = UFOV.getBounds().width;
+        while (lheight * lwidth > tarea) {
             pixelshrink -= 1;
             UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-            area1 = UFOV.getStatistics().area;
+            lheight = UFOV.getBounds().height;
+            lwidth = UFOV.getBounds().width;
         }
         return UFOV;
     }
