@@ -75,15 +75,15 @@ public class Bar_Quadrant implements PlugInFilter {
         double mean = is0.mean;
         double stddev = is0.stdDev;
 
-        double MTF = Math.sqrt(2 * (stddev * stddev - mean)) / mean;
-        double FWHM = wd * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / MTF));
+        double lMTF = MathUtils.MTF(mean, stddev);
+        double FWHM = wd * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lMTF));
 
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) {
             rt = new ResultsTable();
         }
         rt.incrementCounter();
-        rt.addValue("MTF", IJ.d2s(MTF, 5, 9));
+        rt.addValue("MTF", IJ.d2s(lMTF, 5, 9));
         rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
         rt.showRowNumbers(true);
         rt.show("Quadrant bar phantom: " + imp.getTitle());

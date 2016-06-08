@@ -60,5 +60,15 @@ public class MathUtils {
         }
         return suma;
     }
+    
+    /**
+     *
+     * @param mean
+     * @param stddev
+     * @return the Modulation Transfer Function given the mean and stddev of a distribution
+     */
+    public static double MTF(double mean, double stddev) {
+        return Math.sqrt(2 * (stddev * stddev - mean)) / mean;
+    }
 
 }
