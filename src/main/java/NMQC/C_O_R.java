@@ -21,7 +21,6 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
 import utils.*;
-import ij.io.*;
 
 /**
  *

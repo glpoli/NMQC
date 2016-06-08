@@ -22,10 +22,8 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
-import ij.plugin.frame.*;
 import utils.FPoint2D;
 import java.awt.Color;
-import utils.MathUtils;
 
 /**
  *
@@ -189,7 +187,6 @@ public class Planar_Uniformity implements PlugInFilter {
 
         double IU = ((globalmax - globalmin) / (globalmax + globalmin)) * 100;
 
-        RoiManager RM = RoiManager.getInstance();
         PointRoi minPointRoi = new PointRoi(minvalue.X, minvalue.Y);
         minPointRoi.setStrokeColor(Color.blue);
         list.add(minPointRoi);
