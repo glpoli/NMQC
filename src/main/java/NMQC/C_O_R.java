@@ -151,8 +151,8 @@ public class C_O_R implements PlugInFilter {
             rt.addValue("Test", "COR Y");
             rt.addValue("px", IJ.d2s(c[1], 5, 9));
             rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
-            
-            rt.show("Center of Rotation: Sine Fit "+imp.getTitle());
+
+            rt.show("Center of Rotation: Sine Fit " + imp.getTitle());
         }
         if (Method.contains("Conjugate")) {//Conjugate views
             if (ScanArc != 360.0) {
@@ -177,8 +177,8 @@ public class C_O_R implements PlugInFilter {
             rt.addValue("Test", "COR Y");
             rt.addValue("px", IJ.d2s(c[1], 5, 9));
             rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
-            
-            rt.show("Center of Rotation: Conjugate Views "+imp.getTitle());
+
+            rt.show("Center of Rotation: Conjugate Views " + imp.getTitle());
         }
 
     }

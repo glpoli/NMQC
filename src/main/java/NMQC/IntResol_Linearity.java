@@ -27,10 +27,11 @@ import utils.*;
  *
  * @author alex
  */
-public class IntResol_Linearity_X implements PlugInFilter {
+public class IntResol_Linearity implements PlugInFilter {
 
     private ImagePlus imp;
     private Roi roi;
+    private String Method;
 
     /**
      *
@@ -53,6 +54,7 @@ public class IntResol_Linearity_X implements PlugInFilter {
             IJ.error("Rectangular selection required");
             return DONE;
         }
+        this.Method = arg;
         this.imp = imp;
         return DOES_ALL;
     }
@@ -67,19 +69,47 @@ public class IntResol_Linearity_X implements PlugInFilter {
         Calibration cal = imp.getCalibration();
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
+        double pixelsize = 0;
+        int nbins = 0;
+        String AxisRes = "";
+        String AxisLin = "";
+        double[][] counts = null;
         float[][] pixels = ip.getFloatArray();
 
-        int nbins = (int) Math.floor(roi.getFloatWidth() * vw / 30);
+        if (Method.contains("Horizontal")) {
+            pixelsize = vh;
+            AxisLin = "X";
+            AxisRes = "Y";
+            nbins = (int) Math.floor(roi.getFloatWidth() * vw / 30);
 
-        double[][] counts = new double[nbins][(int) roi.getFloatHeight()];
-        double dpos = roi.getFloatWidth() / (nbins - 1);
+            counts = new double[nbins][(int) roi.getFloatHeight()];
+            double dpos = roi.getFloatWidth() / (nbins - 1);
 
-        for (int j = 0; j < roi.getFloatHeight(); j++) {
-            for (int i = 0; i < nbins; i++) {
-                for (int k = 0; k < dpos; k++) {
-                    counts[i][j] += pixels[i * k + (int) roi.getXBase()][j + (int) roi.getYBase()];
+            for (int j = 0; j < roi.getFloatHeight(); j++) {
+                for (int i = 0; i < nbins; i++) {
+                    for (int k = 0; k < dpos; k++) {
+                        counts[i][j] += pixels[i * k + (int) roi.getXBase()][j + (int) roi.getYBase()];
+                    }
+                    counts[i][j] /= (int) dpos;
                 }
-                counts[i][j] /= (int) dpos;
+            }
+        }
+        if (Method.contains("Vertical")) {
+            pixelsize = vw;
+            AxisLin = "Y";
+            AxisRes = "X";
+            nbins = (int) Math.floor(roi.getFloatHeight() * vh / 30);
+
+            counts = new double[nbins][(int) roi.getFloatWidth()];
+            double dpos = roi.getFloatHeight() / (nbins - 1);
+
+            for (int i = 0; i < roi.getFloatWidth(); i++) {
+                for (int j = 0; j < nbins; j++) {
+                    for (int k = 0; k < dpos; k++) {
+                        counts[j][i] += pixels[i + (int) roi.getXBase()][j * k + (int) roi.getYBase()];
+                    }
+                    counts[j][i] /= (int) dpos;
+                }
             }
         }
 
@@ -105,10 +135,10 @@ public class IntResol_Linearity_X implements PlugInFilter {
                     arr1[k] = counts[i][k + med];
                     x1[k] = k + med;
                 }
-                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * vh;
+                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * pixelsize;
                 med = med1;
                 x[i][j] = j;
-                double tresol = Fitter.resolution(x1, arr1, vh, false);
+                double tresol = Fitter.resolution(x1, arr1, pixelsize, false);
                 resol = Math.max(resol, tresol);
                 meanresol += tresol;
                 countpeaks += 1;
@@ -119,9 +149,9 @@ public class IntResol_Linearity_X implements PlugInFilter {
                 arr[k] = counts[i][k + med];
                 xf[k] = k + med;
             }
-            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * vh;
+            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * pixelsize;
             x[i][peakpos.length - 1] = peakpos.length - 1;
-            double tresol = Fitter.resolution(xf, arr, vh, false);
+            double tresol = Fitter.resolution(xf, arr, pixelsize, false);
             resol = Math.max(resol, tresol);
             meanresol += tresol;
             countpeaks += 1;
@@ -144,26 +174,26 @@ public class IntResol_Linearity_X implements PlugInFilter {
         rt.addValue("Test", "Number of bins: ");
         rt.addValue("Value", nbins);
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Test", "Worst Intrinsic Resolution in " + AxisRes + "(mm): ");
         rt.addValue("Value", IJ.d2s(resol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic Resolution in Y(mm): ");
+        rt.addValue("Test", "Mean Intrinsic Resolution in " + AxisRes + "(mm): ");
         rt.addValue("Value", IJ.d2s(meanresol / countpeaks, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Absolute Linearity in X(mm): ");
+        rt.addValue("Test", "Absolute Linearity in " + AxisLin + "(mm): ");
         rt.addValue("Value", IJ.d2s(a[1], 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Differential Linearity in X(mm): ");
+        rt.addValue("Test", "Differential Linearity in " + AxisLin + "(mm): ");
         rt.addValue("Value", IJ.d2s(Math.sqrt(MathUtils.sqrsum(residuals) / (residuals.length * (residuals.length - 1))), 4, 9));
         rt.showRowNumbers(false);
-        rt.show("Intrinsic Resolution and Linearity in X");
+        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
     }
 
     void showAbout() {
         IJ.showMessage("About Intrinsic Resolution and Linearity...",
-                "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en el eje X en mm\n"
-                + " y determina la linealidad absoluta y diferencial en el eje X en mm.\n\n"
+                "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca en mm\n"
+                + " y determina la linealidad absoluta y diferencial en mm.\n\n"
                 + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
-                + " and determinate the absolute linearity and differential linearity in X in mm.\n");
+                + " and determinate the absolute linearity and differential linearity in mm.\n");
     }
 }
