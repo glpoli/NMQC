@@ -20,7 +20,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
-import NMQC.utils.*;
+import utils.*;
 
 /**
  *
@@ -159,7 +159,7 @@ public class Four_Bar_Phantom implements PlugInFilter {
 
         double cY = c2 - c1;
 
-        GenericDialog gd = new GenericDialog("Pixel Size in X");
+        GenericDialog gd = new GenericDialog("Four Bars Phantom");
         gd.addNumericField("Enter distance between sources (cm):", 10, 2);
         gd.showDialog();
         if (gd.wasCanceled()) {

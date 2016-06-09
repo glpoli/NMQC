@@ -22,10 +22,8 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
-import ij.plugin.frame.*;
-import NMQC.utils.FPoint2D;
+import utils.FPoint2D;
 import java.awt.Color;
-import java.util.*;
 
 /**
  *
@@ -65,7 +63,7 @@ public class Planar_Uniformity implements PlugInFilter {
      * @param imp The active image
      * @param Method The method to calculate boundary, one of
      * AutoThresholder.Method.values()
-     * @param cutoff The cuttof to shrink boundary poligon
+     * @param cutoff The cuttof to shrink boundary polygon
      */
     private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
@@ -77,34 +75,40 @@ public class Planar_Uniformity implements PlugInFilter {
         }
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
-        imp2.setRoi(roi);
-        
-        //Initial shrink, include only the most relevant part >75%
+        PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);
+        imp2.setRoi(CHroi);
+
+        // Initial shrink, include only the most relevant part >75%
+        // TODO: Would not be better to use MTF?? It would avoid local large non uniformities 
+        //*
         ImageStatistics is1 = imp2.getStatistics();
         double mean = is1.mean;
-        double stddev = is1.stdDev;
+        double min = is1.min;
         float pixelshrink = -1;
-        Roi troi = roi;
-        while (stddev>0.25*mean) {
-            troi = RoiEnlarger.enlarge(roi, pixelshrink); 
+        Roi troi = CHroi;
+        while (min <= 0.75 * mean) {
+            troi = RoiEnlarger.enlarge(CHroi, pixelshrink);
             pixelshrink -= 1;
             imp2.setRoi(troi);
             is1 = imp2.getStatistics();
             mean = is1.mean;
-            stddev = is1.stdDev;
+            min = is1.min;
         }
-        roi=troi;
+        roi = troi;
 
-        //Area
+        //Final shrink, the area of final roi shall be a fraction of current area
         pixelshrink = -1;
         Roi UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-        double area0 = UFOV.getStatistics().area;
-        double area1 = area0;
-        double UFOVarea = cutoff * cutoff * area0;
-        while (area1 > UFOVarea) {
+        double theight = roi.getBounds().height;
+        double twidth = roi.getBounds().width;
+        double tarea = cutoff * theight * twidth;
+        double lheight = UFOV.getBounds().height;
+        double lwidth = UFOV.getBounds().width;
+        while (lheight * lwidth > tarea) {
             pixelshrink -= 1;
             UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-            area1 = UFOV.getStatistics().area;
+            lheight = UFOV.getBounds().height;
+            lwidth = UFOV.getBounds().width;
         }
         return UFOV;
     }
@@ -116,6 +120,7 @@ public class Planar_Uniformity implements PlugInFilter {
         imp2.deleteRoi();
         double scale = 1.0 / shrinkfactor;
         Roi lFOV = RoiScaler.scale(sFOV, scale, scale, false);
+        lFOV = RoiEnlarger.enlarge(lFOV, -1);//To avoid boundaries
         Overlay list = new Overlay();
         list.add(lFOV);
         //imp2.setRoi(lFOV);
@@ -135,8 +140,8 @@ public class Planar_Uniformity implements PlugInFilter {
         double globalmax = is0.min;
         FPoint2D PBase = new FPoint2D(sFOV.getBounds().x / shrinkfactor, sFOV.getBounds().y / shrinkfactor);
 
-        for (int j = (int) PBase.Y; j < lFOV.getFloatHeight() + PBase.Y; j++) {
-            for (int i = (int) PBase.X; i < lFOV.getFloatWidth() + PBase.X; i++) {
+        for (int j = (int) Math.round(PBase.Y); j < lFOV.getFloatHeight() + PBase.Y; j++) {
+            for (int i = (int) Math.round(PBase.X); i < lFOV.getFloatWidth() + PBase.X; i++) {
                 if (lFOV.contains(i, j)) {
                     if (pixels[i][j] < globalmin) {
                         globalmin = pixels[i][j];
@@ -181,15 +186,14 @@ public class Planar_Uniformity implements PlugInFilter {
         }
 
         double IU = ((globalmax - globalmin) / (globalmax + globalmin)) * 100;
-        
-        RoiManager RM = RoiManager.getInstance();
+
         PointRoi minPointRoi = new PointRoi(minvalue.X, minvalue.Y);
         minPointRoi.setStrokeColor(Color.blue);
         list.add(minPointRoi);
         PointRoi maxPointRoi = new PointRoi(maxvalue.X, maxvalue.Y);
         maxPointRoi.setStrokeColor(Color.red);
         list.add(maxPointRoi);
-        
+
         ip2.setMinAndMax(globalmin, globalmax);
         imp2.setOverlay(list);
         imp2.show();
@@ -226,25 +230,24 @@ public class Planar_Uniformity implements PlugInFilter {
         if (rt == null) {rt = new ResultsTable();}*/
         ResultsTable rt = new ResultsTable();
         Overlay list = new Overlay();
-        int shrinkfactor;
 
         Roi FOV;
-        shrinkfactor = 4;
-        
+        int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
+
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
         FOV = getThreshold(imp, choice, 0.95);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
-        
+
         rt.incrementCounter();
         rt.addValue("ROI", "CFOV");
         FOV = getThreshold(imp, choice, 0.75);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
-        
+
         rt.showRowNumbers(true);
-        rt.show("Planar Uniformity");
+        rt.show("Planar Uniformity: " + imp.getTitle());
 
         imp.setOverlay(list);
     }

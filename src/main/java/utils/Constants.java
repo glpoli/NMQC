@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package NMQC.utils;
+package utils;
 
 import ij.*;
+import static ij.util.Tools.*;
 
 /**
  *
  * @author alex.vergara
  */
 public class Constants {
-    
+
     public static int NEMAWIDTH = 5;
-    
-    public static int findMiddlePointinTwoPeaks(double[] array){
+
+    public static int findMiddlePointinTwoPeaks(double[] array) {
         int[] peakpos = Fitter.findPeaks(array);
         if (peakpos.length < 2) {
             IJ.error("Two bars phantom needed");
@@ -44,5 +45,35 @@ public class Constants {
 
         return (int) (0.5 * (maximo1.X + maximo2.X));
     }
+
+    public static String getStringValueFromInfo(String Info, String key) {
+        int i = Info.indexOf(key);
+        if (i < 0) {
+            IJ.error("Error while reading header", "No info for key " + key + " in dicom header");
+        }
+        while (i > 0 && Character.isLetterOrDigit(Info.charAt(i - 1))) {
+            i = Info.indexOf(key, i + key.length());
+        }
+        int index1 = i + key.length();
+        int index2 = Info.indexOf("\n", index1);
+        if (index2 == -1) {
+            index2 = Info.length();
+        }
+        String Value = Info.substring(index1, index2);
+        String sep = ": ";
+        i = Value.indexOf(sep);// standard 'key: value' pair?
+        if (i<0) {
+            sep = " = ";
+            i = Value.indexOf(sep);// Bio-Formats metadata?
+            if (i<0) {
+                IJ.error("Error while reading header", "Bad header or not a dicom header");
+            }
+        }
+        return Value.substring(i+sep.length());
+    }
     
+    public static double getNumericValueFromInfo(String Info, String key) {
+        return parseDouble(getStringValueFromInfo(Info, key));
+    }
+
 }

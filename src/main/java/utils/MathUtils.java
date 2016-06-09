@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package NMQC.utils;
+package utils;
 
 /**
  *
@@ -59,6 +59,16 @@ public class MathUtils {
             suma = suma + array[i] * array[i];
         }
         return suma;
+    }
+    
+    /**
+     *
+     * @param mean
+     * @param stddev
+     * @return the Modulation Transfer Function given the mean and stddev of a distribution
+     */
+    public static double MTF(double mean, double stddev) {
+        return Math.sqrt(2 * (stddev * stddev - mean)) / mean;
     }
 
 }

@@ -20,8 +20,7 @@ import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
-import NMQC.utils.*;
-import ij.io.*;
+import utils.*;
 
 /**
  *
@@ -30,6 +29,7 @@ import ij.io.*;
 public class C_O_R implements PlugInFilter {
 
     private ImagePlus imp;
+    private String Method;
 
     /**
      *
@@ -43,6 +43,7 @@ public class C_O_R implements PlugInFilter {
             showAbout();
             return DONE;
         }
+        this.Method = arg;
         if (imp == null) {
             IJ.noImage();
             return DONE;
@@ -67,9 +68,29 @@ public class C_O_R implements PlugInFilter {
         double[] cmy = new double[ns];
         double[] it = new double[ns];
 
+        //Reading Dicom header for angle data
+        String Info = imp.getInfoProperty();
+        String ScanArckey = "0018,1143";
+        String StartAnglekey = "0054,0200";
+        String RotationDirectiokey = "0018,1140";
+
+        double ScanArc = Constants.getNumericValueFromInfo(Info, ScanArckey);
+        double StartAngle = Constants.getNumericValueFromInfo(Info, StartAnglekey);
+        String RotationDirection = Constants.getStringValueFromInfo(Info, RotationDirectiokey);
+        double anglestep = 0;
+        if (RotationDirection.contains("CCW")) {
+            anglestep = ScanArc / ns;
+        } else if (RotationDirection.contains("CW")) {
+            anglestep = -ScanArc / ns;
+        } else {
+            ScanArc = ns;
+            StartAngle = 0;
+            anglestep = 1;
+        }
+
         for (int z = 1; z <= ns; z++) {
             imp.setSlice(z);
-            it[z - 1] = z;
+            it[z - 1] = (StartAngle + z * anglestep) * 2 * Math.PI / 360;
             ImageStatistics is = ip.getStatistics();
             cmx[z - 1] = is.xCenterOfMass;
             cmy[z - 1] = is.yCenterOfMass;
@@ -105,7 +126,6 @@ public class C_O_R implements PlugInFilter {
             IJ.showStatus("Error: fit yields Not-a-Number");
             return;
         }
-        Plotter.plot(cf, false);
 
         //To determinate the offset in Y
         double avgy = MathUtils.averag(cmy);
@@ -119,7 +139,10 @@ public class C_O_R implements PlugInFilter {
         double[] c = Tools.getMinMax(diferencia);
 
         ResultsTable rt = new ResultsTable();
-        for (int i = 0; i < 1; i++) {
+        rt.showRowNumbers(false);
+
+        if (Method.contains("Sine")) {//Sine fit
+            Plotter.plot(cf, false);
             rt.incrementCounter();
             rt.addValue("Test", "COR X");
             rt.addValue("px", IJ.d2s(b[1], 5, 9));
@@ -128,12 +151,36 @@ public class C_O_R implements PlugInFilter {
             rt.addValue("Test", "COR Y");
             rt.addValue("px", IJ.d2s(c[1], 5, 9));
             rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
+
+            rt.show("Center of Rotation: Sine Fit " + imp.getTitle());
         }
-        rt.showRowNumbers(false);
-        rt.show("Center of Rotation");
-        
-        //Conjugate views
-        
+        if (Method.contains("Conjugate")) {//Conjugate views
+            if (ScanArc != 360.0) {
+                IJ.error("Error in Connjugate View Method", "Scan Arc must be 360 for this method\n"
+                        + "Current Scan Arc is: " + IJ.d2s(ScanArc));
+                return;
+            }
+
+            int rsize = (int) ns / 2;
+            double[] Rx = new double[rsize];
+            for (int i = 0; i < rsize; i++) {
+                Rx[i] = (imp.getWidth() + 1 - cmx[i] - cmx[i + rsize]) / 2;
+            }
+
+            b = Tools.getMinMax(Rx);
+
+            rt.incrementCounter();
+            rt.addValue("Test", "COR X");
+            rt.addValue("px", IJ.d2s(b[1], 5, 9));
+            rt.addValue("mm", IJ.d2s(b[1] * vw, 5, 9));
+            rt.incrementCounter();
+            rt.addValue("Test", "COR Y");
+            rt.addValue("px", IJ.d2s(c[1], 5, 9));
+            rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
+
+            rt.show("Center of Rotation: Conjugate Views " + imp.getTitle());
+        }
+
     }
 
     void showAbout() {
