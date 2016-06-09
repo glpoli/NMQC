@@ -24,6 +24,7 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import utils.FPoint2D;
 import java.awt.Color;
+import utils.MathUtils;
 
 /**
  *
@@ -68,7 +69,8 @@ public class Planar_Uniformity implements PlugInFilter {
     private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         ImagePlus imp2 = new ImagePlus("Thresholded " + Method, ip2);
-        ip2.setAutoThreshold(Method);
+        ImageStatistics is1 = imp2.getStatistics();
+        ip2.setThreshold(is1.min + 1, is1.max, ImageProcessor.BLACK_AND_WHITE_LUT);
         boolean darkBackground = Method.contains("dark");
         if (!darkBackground) {
             ip2.invert();
@@ -76,40 +78,12 @@ public class Planar_Uniformity implements PlugInFilter {
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
         PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);
-        imp2.setRoi(CHroi);
 
-        // Initial shrink, include only the most relevant part >75%
-        // TODO: Would not be better to use MTF?? It would avoid local large non uniformities 
-        //*
-        ImageStatistics is1 = imp2.getStatistics();
-        double mean = is1.mean;
-        double min = is1.min;
-        float pixelshrink = -1;
-        Roi troi = CHroi;
-        while (min <= 0.75 * mean) {
-            troi = RoiEnlarger.enlarge(CHroi, pixelshrink);
-            pixelshrink -= 1;
-            imp2.setRoi(troi);
-            is1 = imp2.getStatistics();
-            mean = is1.mean;
-            min = is1.min;
-        }
-        roi = troi;
-
-        //Final shrink, the area of final roi shall be a fraction of current area
-        pixelshrink = -1;
-        Roi UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-        double theight = roi.getBounds().height;
-        double twidth = roi.getBounds().width;
-        double tarea = cutoff * theight * twidth;
-        double lheight = UFOV.getBounds().height;
-        double lwidth = UFOV.getBounds().width;
-        while (lheight * lwidth > tarea) {
-            pixelshrink -= 1;
-            UFOV = RoiEnlarger.enlarge(roi, pixelshrink);
-            lheight = UFOV.getBounds().height;
-            lwidth = UFOV.getBounds().width;
-        }
+        //the final roi shall be a fraction of current roi
+        double theight = CHroi.getBounds().height;
+        double twidth = CHroi.getBounds().width;
+        double pixelshrink = - Math.max((1-cutoff)*theight/2, (1-cutoff)*twidth/2);
+        Roi UFOV = RoiEnlarger.enlarge(CHroi, pixelshrink);
         return UFOV;
     }
 
@@ -123,7 +97,6 @@ public class Planar_Uniformity implements PlugInFilter {
         lFOV = RoiEnlarger.enlarge(lFOV, -1);//To avoid boundaries
         Overlay list = new Overlay();
         list.add(lFOV);
-        //imp2.setRoi(lFOV);
         float[] kernel = {1, 2, 1, 2, 4, 2, 1, 2, 1};
         Convolver cv = new Convolver();
         cv.setNormalize(true);
