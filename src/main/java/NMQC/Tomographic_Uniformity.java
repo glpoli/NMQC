@@ -61,7 +61,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
         double[] gvector = new double[simp.getWidth()];
         int rmin = simp.getWidth();
         FPoint2D center = new FPoint2D(simp.getHeight() / 2, simp.getWidth() / 2);
-        
+        simp.setRoi(lFOV);
+        ImageStatistics is = simp.getStatistics();
+
         double DU = 0;
         for (int i = 0; i < 360; i++) {
             int rmax = 0;
@@ -86,18 +88,21 @@ public class Tomographic_Uniformity implements PlugInFilter {
             double[] temp = Tools.getMinMax(vector);
             double lmin = temp[0];
             double lmax = temp[1];
-            DU = Math.max(DU, ((lmax - lmin) / (lmax + lmin)) * 100);
+            DU = Math.max(DU, Math.max((lmax - is.mean) / (lmax + is.mean) * 100, (is.mean - lmin) / (lmin + is.mean) * 100));
         }
 
         double[] ngvector = new double[rmin];
         System.arraycopy(gvector, 0, ngvector, 0, rmin);
-        double[] temp = Tools.getMinMax(ngvector);
-        double gmax = temp[1];
-        double gmin = temp[0];
-        double IU = ((gmax - gmin) / (gmax + gmin)) * 100;
+        double centre=0;
+        double border=0;
+        for (int i = 0; i<Math.min(5, rmin/2); i++){
+            centre+=ngvector[i];
+            border+=ngvector[rmin-i-1];
+        }
+        double IU = (Math.abs(centre - border) / (centre + border)) * 100;
 
-        rt.addValue("Integral Uniformity", IU);
-        rt.addValue("Differential Uniformity", DU);
+        rt.addValue("Maximum Ring Contrast", DU);
+        rt.addValue("Centre - Border Contrast", IU);
     }
 
     /**
@@ -109,7 +114,6 @@ public class Tomographic_Uniformity implements PlugInFilter {
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
-        Overlay list = new Overlay();
 
         int ns = imp.getStackSize();
         int sinit;
@@ -146,12 +150,11 @@ public class Tomographic_Uniformity implements PlugInFilter {
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Mean Image", ip2);
         Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
-        list.add(FOV);
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);
         rt.show("Tomographic Uniformity");
-        imp2.setOverlay(list);
+ 
     }
 
     void showAbout() {
