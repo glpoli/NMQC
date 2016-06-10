@@ -20,10 +20,11 @@ import ij.gui.*;
 import ij.process.*;
 //import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
-import ij.plugin.*;
+import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.*;
 import utils.FPoint2D;
 import ij.util.*;
+import utils.*;
 
 /**
  *
@@ -54,71 +55,23 @@ public class Tomographic_Uniformity implements PlugInFilter {
         return DOES_ALL;
     }
 
-    /**
-     *
-     * @param imp The active image
-     * @param Method The method to calculate boundary, one of
-     * AutoThresholder.Method.values()
-     * @param cutoff The cuttof to shrink boundary poligon
-     */
-    private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
-        ImageProcessor ip2 = imp.getProcessor().duplicate();
-        ImagePlus imp2 = new ImagePlus("Thresholded " + Method, ip2);
-        ip2.setAutoThreshold(Method);
-        boolean darkBackground = Method.contains("dark");
-        if (!darkBackground) {
-            ip2.invert();
-        }
-        ThresholdToSelection ts = new ThresholdToSelection();
-        Roi lroi = ts.convert(ip2);
-        imp2.setRoi(lroi);
-
-        //Initial shrink, include only the most relevant part >75%
-        ImageStatistics is1 = imp2.getStatistics();
-        double mean = is1.mean;
-        double stddev = is1.stdDev;
-        float pixelshrink = -1;
-        Roi troi = lroi;
-        while (stddev > 0.25 * mean) {
-            troi = RoiEnlarger.enlarge(lroi, pixelshrink);
-            pixelshrink -= 1;
-            imp2.setRoi(troi);
-            is1 = imp2.getStatistics();
-            mean = is1.mean;
-            stddev = is1.stdDev;
-        }
-        lroi = troi;
-
-        //Area
-        pixelshrink = -1;
-        Roi UFOV = RoiEnlarger.enlarge(lroi, pixelshrink);
-        double area0 = UFOV.getStatistics().area;
-        double area1 = area0;
-        double UFOVarea = cutoff * cutoff * area0;
-        while (area1 > UFOVarea) {
-            pixelshrink -= 1;
-            UFOV = RoiEnlarger.enlarge(lroi, pixelshrink);
-            area1 = UFOV.getStatistics().area;
-        }
-        return UFOV;
-    }
-
     private void getUniformity(ImagePlus simp, Roi sFOV, ResultsTable rt) {
-        ImagePlus limp = simp.duplicate();
-        limp.setRoi(sFOV);
-        float[][] Pixels = limp.getProcessor().getFloatArray();
-        double[] gvector = new double[limp.getWidth()];
-        int rmin = limp.getWidth();
-        FPoint2D center = new FPoint2D(limp.getHeight() / 2, limp.getWidth() / 2);
-
+        Roi lFOV = RoiEnlarger.enlarge(sFOV, -1);//To avoid boundaries
+        float[][] Pixels = simp.getProcessor().getFloatArray();
+        double[] gvector = new double[simp.getWidth()];
+        int rmin = simp.getWidth();
+        FPoint2D center = new FPoint2D(simp.getHeight() / 2, simp.getWidth() / 2);
+        
         double DU = 0;
         for (int i = 0; i < 360; i++) {
             int rmax = 0;
             double angle = 2 * Math.PI * i / 360;
-            int lX = (int) (center.X + rmax * Math.cos(angle));
-            int lY = (int) (center.Y + rmax * Math.sin(angle));
-            while (sFOV.contains(lX, lY)) {
+            int lX = (int) (center.X);
+            int lY = (int) (center.Y);
+            while (lFOV.contains(lX, lY)) {
                 rmax += 1;
+                lX = (int) (center.X + rmax * Math.cos(angle));
+                lY = (int) (center.Y + rmax * Math.sin(angle));
             }
             if (rmax < rmin) {
                 rmin = rmax;
@@ -153,21 +106,6 @@ public class Tomographic_Uniformity implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
-        /*  Dialog to handle the method and the background
-        GenericDialog gd = new GenericDialog("Tomographic Uniformity.");
-        gd.addChoice("Select threshold method:", mMethodStr, "Default");
-        gd.addCheckbox("Dark Background", true);
-        gd.showDialog();
-        if (gd.wasCanceled()) {
-            return;
-        }
-        String choice = gd.getNextChoice();
-        boolean darkb = gd.getNextBoolean();
-        if (darkb) {
-            choice += " dark";
-        }
-         */ // end Dialog
-        String choice = "Triangle dark"; // No dialog used
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
@@ -190,25 +128,24 @@ public class Tomographic_Uniformity implements PlugInFilter {
             sinit = 1;
             send = 1;
         }
-        float[][] ip2mat = new float[ip.getWidth()][ip.getHeight()];
+        float[][] ip2mat = new float[imp.getWidth()][imp.getHeight()];
         for (int z = sinit; z <= send; z++) {
             imp.setSlice(z);
-            float[][] pixels = ip.getFloatArray();
-            for (int i = 0; i < ip.getWidth(); i++) {
-                for (int j = 0; j < ip.getHeight(); j++) {
+            float[][] pixels = imp.getProcessor().getFloatArray();
+            for (int i = 0; i < imp.getWidth(); i++) {
+                for (int j = 0; j < imp.getHeight(); j++) {
                     ip2mat[i][j] += pixels[i][j];
                 }
             }
         }
-        for (int i = 0; i < ip.getWidth(); i++) {
-            for (int j = 0; j < ip.getHeight(); j++) {
+        for (int i = 0; i < imp.getWidth(); i++) {
+            for (int j = 0; j < imp.getHeight(); j++) {
                 ip2mat[i][j] /= send - sinit + 1;
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Mean Image", ip2);
-        Roi FOV;
-        FOV = getThreshold(imp2, choice, 0.95);
+        Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
         list.add(FOV);
         getUniformity(imp2, FOV, rt);
         imp2.show();
