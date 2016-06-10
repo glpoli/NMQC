@@ -93,11 +93,11 @@ public class Tomographic_Uniformity implements PlugInFilter {
 
         double[] ngvector = new double[rmin];
         System.arraycopy(gvector, 0, ngvector, 0, rmin);
-        double centre=0;
-        double border=0;
-        for (int i = 0; i<Math.min(5, rmin/2); i++){
-            centre+=ngvector[i];
-            border+=ngvector[rmin-i-1];
+        double centre = 0;
+        double border = 0;
+        for (int i = 0; i < Math.min(5, rmin / 2); i++) {
+            centre += ngvector[i];
+            border += ngvector[rmin - i - 1];
         }
         double IU = (Math.abs(centre - border) / (centre + border)) * 100;
 
@@ -148,13 +148,13 @@ public class Tomographic_Uniformity implements PlugInFilter {
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        ImagePlus imp2 = new ImagePlus("Mean Image", ip2);
+        ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
         Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);
-        rt.show("Tomographic Uniformity");
- 
+        rt.show("Tomographic Uniformity " + imp.getTitle() + ": Frames " + sinit + " to " + send);
+
     }
 
     void showAbout() {
