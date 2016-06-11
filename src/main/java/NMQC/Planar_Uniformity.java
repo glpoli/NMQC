@@ -18,13 +18,12 @@ package NMQC;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-//import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import utils.FPoint2D;
 import java.awt.Color;
-import utils.MathUtils;
+import utils.*;
 
 /**
  *
@@ -57,34 +56,6 @@ public class Planar_Uniformity implements PlugInFilter {
         this.minvalue = new FPoint2D(0, 0);
         this.maxvalue = new FPoint2D(0, 0);
         return DOES_ALL;
-    }
-
-    /**
-     *
-     * @param imp The active image
-     * @param Method The method to calculate boundary, one of
-     * AutoThresholder.Method.values()
-     * @param cutoff The cuttof to shrink boundary polygon
-     */
-    private Roi getThreshold(ImagePlus imp, String Method, double cutoff) {
-        ImageProcessor ip2 = imp.getProcessor().duplicate();
-        ImagePlus imp2 = new ImagePlus("Thresholded " + Method, ip2);
-        ImageStatistics is1 = imp2.getStatistics();
-        ip2.setThreshold(is1.min + 1, is1.max, ImageProcessor.BLACK_AND_WHITE_LUT);
-        boolean darkBackground = Method.contains("dark");
-        if (!darkBackground) {
-            ip2.invert();
-        }
-        ThresholdToSelection ts = new ThresholdToSelection();
-        Roi roi = ts.convert(ip2);
-        PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);
-
-        //the final roi shall be a fraction of current roi
-        double theight = CHroi.getBounds().height;
-        double twidth = CHroi.getBounds().width;
-        double pixelshrink = - Math.max((1-cutoff)*theight/2, (1-cutoff)*twidth/2);
-        Roi UFOV = RoiEnlarger.enlarge(CHroi, pixelshrink);
-        return UFOV;
     }
 
     private void getUniformity(ImagePlus imp, Roi sFOV, int shrinkfactor, ResultsTable rt) {
@@ -182,40 +153,24 @@ public class Planar_Uniformity implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
-        /*  Dialog to handle the method and the background
-        GenericDialog gd = new GenericDialog("Planar Uniformity.");
-        //gd.addChoice("Select FOV:", form, "UFOV");
-        gd.addChoice("Select threshold method:", mMethodStr, "Default");
-        gd.addCheckbox("Dark Background", true);
-        gd.showDialog();
-        if (gd.wasCanceled()) {
-            return;
-        }
-        //String sFOV = gd.getNextChoice();
-        String choice = gd.getNextChoice();
-        boolean darkb = gd.getNextBoolean();
-        if (darkb) {
-            choice += " dark";
-        }
-         */ // end Dialog
-        String choice = "Triangle dark"; // No dialog used
-        /*ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {rt = new ResultsTable();}*/
         ResultsTable rt = new ResultsTable();
         Overlay list = new Overlay();
 
         Roi FOV;
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
+        ImageStatistics is = imp.getStatistics();
+        double factor = (is.min+ 1)/is.max;
 
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
-        FOV = getThreshold(imp, choice, 0.95);
+        FOV = Constants.getThreshold(imp, factor, 0.95);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 
         rt.incrementCounter();
         rt.addValue("ROI", "CFOV");
-        FOV = getThreshold(imp, choice, 0.75);
+        
+        FOV = Constants.getThreshold(imp, factor, 0.75);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 
