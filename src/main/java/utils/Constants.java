@@ -91,8 +91,7 @@ public class Constants {
     public static Roi getThreshold(ImagePlus imp, double min, double max) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         //ImagePlus imp2 = new ImagePlus("Thresholded " + imp.getTitle(), ip2);
-        ImageStatistics is1 = ip2.getStatistics();
-        ip2.setThreshold(min * is1.max, is1.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ip2.setThreshold(min, ip2.getStatistics().max, ImageProcessor.BLACK_AND_WHITE_LUT);
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
         PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);

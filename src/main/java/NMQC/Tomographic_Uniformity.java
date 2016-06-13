@@ -149,7 +149,8 @@ public class Tomographic_Uniformity implements PlugInFilter {
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
-        Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
+        ImageStatistics is2 = imp2.getStatistics();
+        Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);

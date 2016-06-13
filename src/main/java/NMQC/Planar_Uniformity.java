@@ -159,18 +159,17 @@ public class Planar_Uniformity implements PlugInFilter {
         Roi FOV;
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
         ImageStatistics is = imp.getStatistics();
-        double factor = (is.min + 1) / is.max;
 
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
-        FOV = Constants.getThreshold(imp, factor, 0.95);
+        FOV = Constants.getThreshold(imp, is.min + 1, 0.95);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 
         rt.incrementCounter();
         rt.addValue("ROI", "CFOV");
 
-        FOV = Constants.getThreshold(imp, factor, 0.75);
+        FOV = Constants.getThreshold(imp, is.min + 1, 0.75);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 
