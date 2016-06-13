@@ -16,6 +16,10 @@
 package utils;
 
 import ij.*;
+import ij.gui.*;
+import ij.plugin.*;
+import ij.plugin.filter.*;
+import ij.process.*;
 import static ij.util.Tools.*;
 
 /**
@@ -62,18 +66,43 @@ public class Constants {
         String Value = Info.substring(index1, index2);
         String sep = ": ";
         i = Value.indexOf(sep);// standard 'key: value' pair?
-        if (i<0) {
+        if (i < 0) {
             sep = " = ";
             i = Value.indexOf(sep);// Bio-Formats metadata?
-            if (i<0) {
+            if (i < 0) {
                 IJ.error("Error while reading header", "Bad header or not a dicom header");
             }
         }
-        return Value.substring(i+sep.length());
+        return Value.substring(i + sep.length());
     }
-    
+
     public static double getNumericValueFromInfo(String Info, String key) {
         return parseDouble(getStringValueFromInfo(Info, key));
+    }
+
+    /**
+     *
+     * @param imp The active image
+     * @param min The percentage of the max to be considered for the boundary
+     * polygon
+     * @param max The cuttof to shrink boundary polygon
+     * @return The FOV for the specified cutoff
+     */
+    public static Roi getThreshold(ImagePlus imp, double min, double max) {
+        ImageProcessor ip2 = imp.getProcessor().duplicate();
+        //ImagePlus imp2 = new ImagePlus("Thresholded " + imp.getTitle(), ip2);
+        ImageStatistics is1 = ip2.getStatistics();
+        ip2.setThreshold(min * is1.max, is1.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ThresholdToSelection ts = new ThresholdToSelection();
+        Roi roi = ts.convert(ip2);
+        PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);
+
+        //the final roi shall be a fraction of current roi
+        double theight = CHroi.getBounds().height;
+        double twidth = CHroi.getBounds().width;
+        double pixelshrink = (max - 1) * Math.max(theight, twidth) / 2;
+        Roi UFOV = RoiEnlarger.enlarge(CHroi, pixelshrink);
+        return UFOV;
     }
 
 }

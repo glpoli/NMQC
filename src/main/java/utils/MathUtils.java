@@ -43,11 +43,11 @@ public class MathUtils {
         double suma = 0;
         double avg = averag(array);
         for (int i = 0; i < array.length; i++) {
-            suma = suma + (array[i]-avg)*(array[i]-avg);
+            suma = suma + (array[i] - avg) * (array[i] - avg);
         }
         return Math.sqrt(suma / (array.length * (array.length - 1)));
     }
-    
+
     /**
      *
      * @param array
@@ -60,15 +60,26 @@ public class MathUtils {
         }
         return suma;
     }
-    
+
     /**
      *
      * @param mean
      * @param stddev
-     * @return the Modulation Transfer Function given the mean and stddev of a distribution
+     * @return the Modulation Transfer Function given the mean and stddev of a
+     * distribution
      */
     public static double MTF(double mean, double stddev) {
         return Math.sqrt(2 * (stddev * stddev - mean)) / mean;
+    }
+
+    /**
+     *
+     * @param min
+     * @param max
+     * @return the contrast between min and max values
+     */
+    public static double Contrast(double min, double max) {
+        return Math.abs(max - min) * 100 / (min + max);
     }
 
 }
