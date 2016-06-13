@@ -109,7 +109,7 @@ public class Planar_Uniformity implements PlugInFilter {
                             }
                         }
                     }
-                    DU = Math.max(DU, ((localmax - localmin) / (localmax + localmin)) * 100);
+                    DU = Math.max(DU, MathUtils.Contrast(localmin, localmax));
                     // By columns
                     localmin = pixels[i][j];
                     localmax = pixels[i][j];
@@ -124,12 +124,12 @@ public class Planar_Uniformity implements PlugInFilter {
                             }
                         }
                     }
-                    DU = Math.max(DU, ((localmax - localmin) / (localmax + localmin)) * 100);
+                    DU = Math.max(DU, MathUtils.Contrast(localmin, localmax));
                 }
             }
         }
 
-        double IU = ((globalmax - globalmin) / (globalmax + globalmin)) * 100;
+        double IU = MathUtils.Contrast(globalmin, globalmax);
 
         PointRoi minPointRoi = new PointRoi(minvalue.X, minvalue.Y);
         minPointRoi.setStrokeColor(Color.blue);
@@ -159,7 +159,7 @@ public class Planar_Uniformity implements PlugInFilter {
         Roi FOV;
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
         ImageStatistics is = imp.getStatistics();
-        double factor = (is.min+ 1)/is.max;
+        double factor = (is.min + 1) / is.max;
 
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
@@ -169,7 +169,7 @@ public class Planar_Uniformity implements PlugInFilter {
 
         rt.incrementCounter();
         rt.addValue("ROI", "CFOV");
-        
+
         FOV = Constants.getThreshold(imp, factor, 0.75);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);

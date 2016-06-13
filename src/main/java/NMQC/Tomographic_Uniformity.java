@@ -88,7 +88,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
             double[] temp = Tools.getMinMax(vector);
             double lmin = temp[0];
             double lmax = temp[1];
-            DU = Math.max(DU, Math.max((lmax - is.mean) / (lmax + is.mean) * 100, (is.mean - lmin) / (lmin + is.mean) * 100));
+            DU = Math.max(DU, Math.max(MathUtils.Contrast(is.mean, lmax), MathUtils.Contrast(is.mean, lmin)));
         }
 
         double[] ngvector = new double[rmin];
@@ -99,7 +99,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
             centre += ngvector[i];
             border += ngvector[rmin - i - 1];
         }
-        double IU = (Math.abs(centre - border) / (centre + border)) * 100;
+        double IU = MathUtils.Contrast(centre, border);
 
         rt.addValue("Maximum Ring Contrast", DU);
         rt.addValue("Centre - Border Contrast", IU);
