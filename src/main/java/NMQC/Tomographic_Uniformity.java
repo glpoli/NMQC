@@ -68,20 +68,20 @@ public class Tomographic_Uniformity implements PlugInFilter {
         for (int i = 0; i < 360; i++) {
             int rmax = 0;
             double angle = 2 * Math.PI * i / 360;
-            int lX = (int) (center.X);
-            int lY = (int) (center.Y);
+            int lX = (int) (center.getX());
+            int lY = (int) (center.getY());
             while (lFOV.contains(lX, lY)) {
                 rmax += 1;
-                lX = (int) (center.X + rmax * Math.cos(angle));
-                lY = (int) (center.Y + rmax * Math.sin(angle));
+                lX = (int) (center.getX() + rmax * Math.cos(angle));
+                lY = (int) (center.getY() + rmax * Math.sin(angle));
             }
             if (rmax < rmin) {
                 rmin = rmax;
             }
             double[] vector = new double[rmax];
             for (int j = 0; j < rmax; j++) {
-                lX = (int) (center.X + j * Math.cos(angle));
-                lY = (int) (center.Y + j * Math.sin(angle));
+                lX = (int) (center.getX() + j * Math.cos(angle));
+                lY = (int) (center.getY() + j * Math.sin(angle));
                 vector[j] = Pixels[lX][lY];
                 gvector[j] += vector[j];
             }
@@ -149,7 +149,8 @@ public class Tomographic_Uniformity implements PlugInFilter {
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
-        Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
+        ImageStatistics is2 = imp2.getStatistics();
+        Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);

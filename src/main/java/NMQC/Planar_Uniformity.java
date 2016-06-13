@@ -84,8 +84,8 @@ public class Planar_Uniformity implements PlugInFilter {
         double globalmax = is0.min;
         FPoint2D PBase = new FPoint2D(sFOV.getBounds().x / shrinkfactor, sFOV.getBounds().y / shrinkfactor);
 
-        for (int j = (int) Math.round(PBase.Y); j < lFOV.getFloatHeight() + PBase.Y; j++) {
-            for (int i = (int) Math.round(PBase.X); i < lFOV.getFloatWidth() + PBase.X; i++) {
+        for (int j = (int) Math.round(PBase.getY()); j < lFOV.getFloatHeight() + PBase.getY(); j++) {
+            for (int i = (int) Math.round(PBase.getX()); i < lFOV.getFloatWidth() + PBase.getX(); i++) {
                 if (lFOV.contains(i, j)) {
                     if (pixels[i][j] < globalmin) {
                         globalmin = pixels[i][j];
@@ -131,10 +131,10 @@ public class Planar_Uniformity implements PlugInFilter {
 
         double IU = MathUtils.Contrast(globalmin, globalmax);
 
-        PointRoi minPointRoi = new PointRoi(minvalue.X, minvalue.Y);
+        PointRoi minPointRoi = new PointRoi(minvalue.getX(), minvalue.getY());
         minPointRoi.setStrokeColor(Color.blue);
         list.add(minPointRoi);
-        PointRoi maxPointRoi = new PointRoi(maxvalue.X, maxvalue.Y);
+        PointRoi maxPointRoi = new PointRoi(maxvalue.getX(), maxvalue.getY());
         maxPointRoi.setStrokeColor(Color.red);
         list.add(maxPointRoi);
 
@@ -159,18 +159,17 @@ public class Planar_Uniformity implements PlugInFilter {
         Roi FOV;
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
         ImageStatistics is = imp.getStatistics();
-        double factor = (is.min + 1) / is.max;
 
         rt.incrementCounter();
         rt.addValue("ROI", "UFOV");
-        FOV = Constants.getThreshold(imp, factor, 0.95);
+        FOV = Constants.getThreshold(imp, is.min + 1, 0.95);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 
         rt.incrementCounter();
         rt.addValue("ROI", "CFOV");
 
-        FOV = Constants.getThreshold(imp, factor, 0.75);
+        FOV = Constants.getThreshold(imp, is.min + 1, 0.75);
         list.add(FOV);
         getUniformity(imp, FOV, shrinkfactor, rt);
 

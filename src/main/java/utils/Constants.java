@@ -21,6 +21,8 @@ import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.process.*;
 import static ij.util.Tools.*;
+import java.awt.*;
+import java.util.*;
 
 /**
  *
@@ -39,15 +41,15 @@ public class Constants {
         FPoint2D maximo1 = new FPoint2D(0, 0);
         FPoint2D maximo2 = new FPoint2D(0, 0);
         for (int value : peakpos) {
-            if (array[value] > maximo1.Y) {
+            if (array[value] > maximo1.getY()) {
                 maximo2.assign(maximo1);
                 maximo1.assign(value, array[value]);
-            } else if (array[value] > maximo2.Y && array[value] < maximo1.Y) {
+            } else if (array[value] > maximo2.getY() && array[value] < maximo1.getY()) {
                 maximo2.assign(value, array[value]);
             }
         }
 
-        return (int) (0.5 * (maximo1.X + maximo2.X));
+        return (int) (0.5 * (maximo1.getX() + maximo2.getX()));
     }
 
     public static String getStringValueFromInfo(String Info, String key) {
@@ -81,6 +83,39 @@ public class Constants {
     }
 
     /**
+     * Returns the coordinates of the pixels inside this ROI as an array of
+     * Points.
+     *
+     * @param roi
+     * @return an array with all the points included in the roi
+     * @see #getContainedFloatPoints()
+     * @see #Iterator()
+     * @Deprecated it is already included in imagej 1.51a
+     */
+    @Deprecated
+    public static FPoint2D[] getContainedPoints(Roi roi) {
+        if (roi.isLine()) {
+            FloatPolygon p = roi.getInterpolatedPolygon();
+            FPoint2D[] points = new FPoint2D[p.npoints];
+            for (int i = 0; i < p.npoints; i++) {
+                points[i] = new FPoint2D((int) Math.round(p.xpoints[i]), (int) Math.round(p.ypoints[i]));
+            }
+            return points;
+        }
+        ImageProcessor mask = roi.getMask();
+        Rectangle bounds = roi.getBounds();
+        ArrayList points = new ArrayList();
+        for (int y = 0; y < bounds.height; y++) {
+            for (int x = 0; x < bounds.width; x++) {
+                if (mask == null || mask.getPixel(x, y) != 0) {
+                    points.add(new FPoint2D((int) roi.getXBase() + x, (int) roi.getYBase() + y));
+                }
+            }
+        }
+        return (FPoint2D[]) points.toArray(new FPoint2D[points.size()]);
+    }
+
+    /**
      *
      * @param imp The active image
      * @param min The percentage of the max to be considered for the boundary
@@ -91,11 +126,13 @@ public class Constants {
     public static Roi getThreshold(ImagePlus imp, double min, double max) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         //ImagePlus imp2 = new ImagePlus("Thresholded " + imp.getTitle(), ip2);
-        ImageStatistics is1 = ip2.getStatistics();
-        ip2.setThreshold(min * is1.max, is1.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ip2.setThreshold(min, ip2.getStatistics().max, ImageProcessor.BLACK_AND_WHITE_LUT);
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
-        PolygonRoi CHroi = new PolygonRoi(roi.getConvexHull(), Roi.POLYGON);
+        FPoint2D[] points = getContainedPoints(roi);
+        ConvexHull ch = new ConvexHull(points);
+        points = ch.getConvexHull();
+        PolygonRoi CHroi = new PolygonRoi(FPoint2D.getXPoints(points), FPoint2D.getYPoints(points), Roi.POLYGON);
 
         //the final roi shall be a fraction of current roi
         double theight = CHroi.getBounds().height;

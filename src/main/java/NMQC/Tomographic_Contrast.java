@@ -96,14 +96,15 @@ public class Tomographic_Contrast implements PlugInFilter {
 
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Uniformity image", ip2);
-        Roi FOV = Constants.getThreshold(imp2, 0.1, 0.9); // 10% of max value for threshold
-        double unif = imp2.getStatistics().mean;
+        ImageStatistics is2 = imp2.getStatistics();
+        Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        double unif = is2.mean;
 
         imp.setSlice(send);
         pixels = imp.getProcessor().getFloatArray();
         for (int i = 0; i < imp.getWidth(); i++) {
             for (int j = 0; j < imp.getHeight(); j++) {
-                ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j];
+                ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
             }
         }
 
@@ -119,8 +120,7 @@ public class Tomographic_Contrast implements PlugInFilter {
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
             if (contrast > 50) {
                 PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
-                tpoint.setName("Sphere " + i);
-                list.add(tpoint);
+                list.add(tpoint, "Sphere " + i);
                 rt.incrementCounter();
                 rt.addValue("Sphere", i);
                 rt.addValue("x", maxs.xpoints[i]);
