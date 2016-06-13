@@ -49,11 +49,11 @@ public class IntResol_Linearity implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-        roi = imp.getRoi();
+        /*roi = imp.getRoi();
         if (roi == null) {
             IJ.error("Rectangular selection required");
             return DONE;
-        }
+        }*/
         this.Method = arg;
         this.imp = imp;
         return DOES_ALL;
@@ -67,6 +67,7 @@ public class IntResol_Linearity implements PlugInFilter {
     public void run(ImageProcessor ip) {
 
         Calibration cal = imp.getCalibration();
+        ImageStatistics is =imp.getStatistics();
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
         double pixelsize = 0;
@@ -75,6 +76,8 @@ public class IntResol_Linearity implements PlugInFilter {
         String AxisLin = "";
         double[][] counts = null;
         float[][] pixels = ip.getFloatArray();
+        roi = Constants.getThreshold(imp, 0.1*is.max, 0.95);
+        imp.setRoi(roi);
 
         if (Method.contains("Horizontal")) {
             pixelsize = vh;
