@@ -21,6 +21,7 @@ import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
+import java.util.*;
 import utils.*;
 
 /**
@@ -31,6 +32,7 @@ public class IntResol_Linearity implements PlugInFilter {
 
     private ImagePlus imp;
     private String Method;
+    final private int NemaSep = 30;//Nema Phantom line separation in mm
 
     /**
      *
@@ -60,8 +62,8 @@ public class IntResol_Linearity implements PlugInFilter {
         public String AxisRes;
         public int nbins;
         public double[][] counts;
-   
-        public myReturnedObjects(){
+
+        public myReturnedObjects() {
             this.pixelsize = 0;
             this.AxisLin = "";
             this.AxisRes = "";
@@ -72,7 +74,7 @@ public class IntResol_Linearity implements PlugInFilter {
     }
 
     private myReturnedObjects getCounts(String Orientation, Roi lroi) {
-        myReturnedObjects result=new myReturnedObjects();
+        myReturnedObjects result = new myReturnedObjects();
         Calibration cal = imp.getCalibration();
         float[][] pixels = imp.getProcessor().getFloatArray();
         double vw = cal.pixelWidth;
@@ -81,60 +83,66 @@ public class IntResol_Linearity implements PlugInFilter {
             result.pixelsize = vh;
             result.AxisLin = "X";
             result.AxisRes = "Y";
-            result.nbins = (int) Math.floor(lroi.getFloatWidth() * vw / 30);
+            result.nbins = (int) Math.floor(lroi.getFloatWidth() * vw / NemaSep);
 
             result.counts = new double[result.nbins][(int) lroi.getFloatHeight()];
             double dpos = lroi.getFloatWidth() / (result.nbins - 1);
 
             for (int j = 0; j < lroi.getFloatHeight(); j++) {
                 for (int i = 0; i < result.nbins; i++) {
-                    if (lroi.contains(i, j)) {
-                        for (int k = 0; k < dpos; k++) {
-                            result.counts[i][j] += pixels[i * k + (int) lroi.getXBase()][j + (int) lroi.getYBase()];
+                    for (int k = 0; k < dpos; k++) {
+                        int xi = i * k + (int) lroi.getXBase();
+                        int yi = j + (int) lroi.getYBase();
+                        if (lroi.contains(xi, yi)) {
+                            result.counts[i][j] += pixels[xi][yi];
                         }
-                        result.counts[i][j] /= (int) dpos;
                     }
+                    result.counts[i][j] /= (int) dpos;
                 }
             }
         }
+
         if (Orientation.contains("Vertical")) {
             result.pixelsize = vw;
             result.AxisLin = "Y";
             result.AxisRes = "X";
-            result.nbins = (int) Math.floor(lroi.getFloatHeight() * vh / 30);
+            result.nbins = (int) Math.floor(lroi.getFloatHeight() * vh / NemaSep);
 
             result.counts = new double[result.nbins][(int) lroi.getFloatWidth()];
             double dpos = lroi.getFloatHeight() / (result.nbins - 1);
 
             for (int i = 0; i < lroi.getFloatWidth(); i++) {
                 for (int j = 0; j < result.nbins; j++) {
-                    if (lroi.contains(i, j)) {
-                        for (int k = 0; k < dpos; k++) {
-                            result.counts[j][i] += pixels[i + (int) lroi.getXBase()][j * k + (int) lroi.getYBase()];
+                    for (int k = 0; k < dpos; k++) {
+                        int xi = i + (int) lroi.getXBase();
+                        int yi = j * k + (int) lroi.getYBase();
+                        if (lroi.contains(xi, yi)) {
+                            result.counts[j][i] += pixels[xi][yi];
                         }
-                        result.counts[j][i] /= (int) dpos;
                     }
+                    result.counts[j][i] /= (int) dpos;
                 }
             }
         }
         return result;
     }
-    
+
     public class myoutput {
+
         double resol;
         double meanresol;
         myReturnedObjects data;
         double[] residuals;
-        
-        public myoutput(){
-            this.resol=0;
-            this.meanresol=0;
-            this.data=new myReturnedObjects();
-            this.residuals=null;
+
+        public myoutput() {
+            this.resol = 0;
+            this.meanresol = 0;
+            this.data = null;
+            this.residuals = null;
         }
     }
-    
-    public myoutput Calculate(Overlay list, double cutoff){
+
+    public myoutput Calculate(Overlay list, double cutoff) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
@@ -148,24 +156,27 @@ public class IntResol_Linearity implements PlugInFilter {
         npeaks = lpeakpos.length;
         double[][] peakpositions = new double[result.data.nbins][npeaks];
         double[][] x = new double[result.data.nbins][npeaks];
+        /*for (int i = 0; i < result.data.nbins; i++) {
+            for (int j = 0; j < npeaks; j++) {
+                x[i][j] = j;
+                peakpositions[i][j] = lpeakpos[j];
+            }
+        }*/
 
         int countpeaks = 0;
         for (int i = 0; i < result.data.nbins; i++) {
+            IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
             int xshift = 0;
-            while ((peakpos[0] - lpeakpos[xshift]) * result.data.pixelsize > 15) {
-                x[i][xshift]=xshift;
-                x[i][npeaks-xshift-1]=npeaks-xshift-1;
-                peakpositions[i][xshift]=lpeakpos[xshift];
-                peakpositions[i][npeaks-xshift-1]=lpeakpos[npeaks-xshift-1];
+            while ((peakpos[0] - lpeakpos[xshift]) * result.data.pixelsize > NemaSep / 2) {
                 xshift += 1;
-                if (xshift>npeaks){
+                if (xshift > npeaks) {
                     IJ.error("Imágen no válida");
                     return null;
                 }
             }
             int med = 0;
-            for (int j = 0; j < npeaks - 1; j++) {
+            for (int j = 0; j < peakpos.length - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
                 double[] arr1 = new double[med1 - med];
                 double[] x1 = new double[med1 - med];
@@ -194,19 +205,27 @@ public class IntResol_Linearity implements PlugInFilter {
             result.meanresol += tresol;
             countpeaks += 1;
         }
-        result.meanresol/=countpeaks;
+        result.meanresol /= countpeaks;
 
         result.residuals = new double[npeaks * result.data.nbins];
         for (int j = 0; j < npeaks; j++) {
-            double[] newx = new double[result.data.nbins];
-            double[] newpos = new double[result.data.nbins];
+            IJ.showProgress(0.5 + j / npeaks / 2);
+            ArrayList<double> lnewx = new ArrayList<double>();
+            ArrayList<double> lnewpos = new ArrayList<double>();
+            //double[] newx = new double[result.data.nbins];
+            //double[] newpos = new double[result.data.nbins];
             for (int i = 0; i < result.data.nbins; i++) {
-                newx[i] = i;
-                newpos[i] = peakpositions[i][j];
+                if (peakpositions[i][j] != 0) {
+                    lnewx.add(i);
+                    lnewpos.add(peakpositions[i][j]);
+                }
             }
-            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos);
+            double[] newx = (double[])lnewx.toArray();
+            double[] newpos = (double[])lnewpos.toArray();
+            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, true);
             System.arraycopy(tresiduals, 0, result.residuals, j * result.data.nbins, result.data.nbins);
         }
+        IJ.showProgress(1.0);
         return result;
     }
 
