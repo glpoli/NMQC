@@ -30,7 +30,6 @@ import utils.*;
 public class IntResol_Linearity implements PlugInFilter {
 
     private ImagePlus imp;
-    private Roi roi;
     private String Method;
 
     /**
@@ -49,14 +48,166 @@ public class IntResol_Linearity implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-        /*roi = imp.getRoi();
-        if (roi == null) {
-            IJ.error("Rectangular selection required");
-            return DONE;
-        }*/
         this.Method = arg;
         this.imp = imp;
         return DOES_ALL;
+    }
+
+    private class myReturnedObjects {
+
+        public double pixelsize;
+        public String AxisLin;
+        public String AxisRes;
+        public int nbins;
+        public double[][] counts;
+   
+        public myReturnedObjects(){
+            this.pixelsize = 0;
+            this.AxisLin = "";
+            this.AxisRes = "";
+            this.nbins = 0;
+            this.counts = null;
+        }
+
+    }
+
+    private myReturnedObjects getCounts(String Orientation, Roi lroi) {
+        myReturnedObjects result=new myReturnedObjects();
+        Calibration cal = imp.getCalibration();
+        float[][] pixels = imp.getProcessor().getFloatArray();
+        double vw = cal.pixelWidth;
+        double vh = cal.pixelHeight;
+        if (Orientation.contains("Horizontal")) {
+            result.pixelsize = vh;
+            result.AxisLin = "X";
+            result.AxisRes = "Y";
+            result.nbins = (int) Math.floor(lroi.getFloatWidth() * vw / 30);
+
+            result.counts = new double[result.nbins][(int) lroi.getFloatHeight()];
+            double dpos = lroi.getFloatWidth() / (result.nbins - 1);
+
+            for (int j = 0; j < lroi.getFloatHeight(); j++) {
+                for (int i = 0; i < result.nbins; i++) {
+                    if (lroi.contains(i, j)) {
+                        for (int k = 0; k < dpos; k++) {
+                            result.counts[i][j] += pixels[i * k + (int) lroi.getXBase()][j + (int) lroi.getYBase()];
+                        }
+                        result.counts[i][j] /= (int) dpos;
+                    }
+                }
+            }
+        }
+        if (Orientation.contains("Vertical")) {
+            result.pixelsize = vw;
+            result.AxisLin = "Y";
+            result.AxisRes = "X";
+            result.nbins = (int) Math.floor(lroi.getFloatHeight() * vh / 30);
+
+            result.counts = new double[result.nbins][(int) lroi.getFloatWidth()];
+            double dpos = lroi.getFloatHeight() / (result.nbins - 1);
+
+            for (int i = 0; i < lroi.getFloatWidth(); i++) {
+                for (int j = 0; j < result.nbins; j++) {
+                    if (lroi.contains(i, j)) {
+                        for (int k = 0; k < dpos; k++) {
+                            result.counts[j][i] += pixels[i + (int) lroi.getXBase()][j * k + (int) lroi.getYBase()];
+                        }
+                        result.counts[j][i] /= (int) dpos;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    public class myoutput {
+        double resol;
+        double meanresol;
+        myReturnedObjects data;
+        double[] residuals;
+        
+        public myoutput(){
+            this.resol=0;
+            this.meanresol=0;
+            this.data=new myReturnedObjects();
+            this.residuals=null;
+        }
+    }
+    
+    public myoutput Calculate(Overlay list, double cutoff){
+        ImageStatistics is = imp.getStatistics();
+        myoutput result = new myoutput();
+        Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
+        list.add(UFOV);
+
+        result.data = getCounts(Method, UFOV);
+        int npeaks = result.data.counts[(int) result.data.nbins / 2].length;
+        double[] central = new double[npeaks];
+        System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
+        int[] lpeakpos = Fitter.findPeaks(central);
+        npeaks = lpeakpos.length;
+        double[][] peakpositions = new double[result.data.nbins][npeaks];
+        double[][] x = new double[result.data.nbins][npeaks];
+
+        int countpeaks = 0;
+        for (int i = 0; i < result.data.nbins; i++) {
+            int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
+            int xshift = 0;
+            while ((peakpos[0] - lpeakpos[xshift]) * result.data.pixelsize > 15) {
+                x[i][xshift]=xshift;
+                x[i][npeaks-xshift-1]=npeaks-xshift-1;
+                peakpositions[i][xshift]=lpeakpos[xshift];
+                peakpositions[i][npeaks-xshift-1]=lpeakpos[npeaks-xshift-1];
+                xshift += 1;
+                if (xshift>npeaks){
+                    IJ.error("Imágen no válida");
+                    return null;
+                }
+            }
+            int med = 0;
+            for (int j = 0; j < npeaks - 1; j++) {
+                int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
+                double[] arr1 = new double[med1 - med];
+                double[] x1 = new double[med1 - med];
+                for (int k = 0; k < med1 - med; k++) {
+                    arr1[k] = result.data.counts[i][k + med];
+                    x1[k] = k + med;
+                }
+                peakpositions[i][j + xshift] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                med = med1;
+                x[i][j + xshift] = j + xshift;
+                double tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
+                result.resol = Math.max(result.resol, tresol);
+                result.meanresol += tresol;
+                countpeaks += 1;
+            }
+            double[] arr = new double[result.data.counts[i].length - med];
+            double[] xf = new double[result.data.counts[i].length - med];
+            for (int k = 0; k < result.data.counts[i].length - med; k++) {
+                arr[k] = result.data.counts[i][k + med];
+                xf[k] = k + med;
+            }
+            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
+            x[i][peakpos.length - 1] = peakpos.length - 1;
+            double tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
+            result.resol = Math.max(result.resol, tresol);
+            result.meanresol += tresol;
+            countpeaks += 1;
+        }
+        result.meanresol/=countpeaks;
+
+        result.residuals = new double[npeaks * result.data.nbins];
+        for (int j = 0; j < npeaks; j++) {
+            double[] newx = new double[result.data.nbins];
+            double[] newpos = new double[result.data.nbins];
+            for (int i = 0; i < result.data.nbins; i++) {
+                newx[i] = i;
+                newpos[i] = peakpositions[i][j];
+            }
+            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos);
+            System.arraycopy(tresiduals, 0, result.residuals, j * result.data.nbins, result.data.nbins);
+        }
+        return result;
     }
 
     /**
@@ -65,129 +216,33 @@ public class IntResol_Linearity implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
-
-        Calibration cal = imp.getCalibration();
-        ImageStatistics is =imp.getStatistics();
-        double vw = cal.pixelWidth;
-        double vh = cal.pixelHeight;
-        double pixelsize = 0;
-        int nbins = 0;
-        String AxisRes = "";
-        String AxisLin = "";
-        double[][] counts = null;
-        float[][] pixels = ip.getFloatArray();
-        roi = Constants.getThreshold(imp, 0.1*is.max, 0.95);
-        imp.setRoi(roi);
-
-        if (Method.contains("Horizontal")) {
-            pixelsize = vh;
-            AxisLin = "X";
-            AxisRes = "Y";
-            nbins = (int) Math.floor(roi.getFloatWidth() * vw / 30);
-
-            counts = new double[nbins][(int) roi.getFloatHeight()];
-            double dpos = roi.getFloatWidth() / (nbins - 1);
-
-            for (int j = 0; j < roi.getFloatHeight(); j++) {
-                for (int i = 0; i < nbins; i++) {
-                    for (int k = 0; k < dpos; k++) {
-                        counts[i][j] += pixels[i * k + (int) roi.getXBase()][j + (int) roi.getYBase()];
-                    }
-                    counts[i][j] /= (int) dpos;
-                }
-            }
-        }
-        if (Method.contains("Vertical")) {
-            pixelsize = vw;
-            AxisLin = "Y";
-            AxisRes = "X";
-            nbins = (int) Math.floor(roi.getFloatHeight() * vh / 30);
-
-            counts = new double[nbins][(int) roi.getFloatWidth()];
-            double dpos = roi.getFloatHeight() / (nbins - 1);
-
-            for (int i = 0; i < roi.getFloatWidth(); i++) {
-                for (int j = 0; j < nbins; j++) {
-                    for (int k = 0; k < dpos; k++) {
-                        counts[j][i] += pixels[i + (int) roi.getXBase()][j * k + (int) roi.getYBase()];
-                    }
-                    counts[j][i] /= (int) dpos;
-                }
-            }
-        }
-
-        double resol = 0;
-        double meanresol = 0;
-        int countpeaks = 0;
-        double[][] peakpositions = new double[nbins][];
-        double[][] x = new double[nbins][];
-        int npeaks = 0;
-        for (int i = 0; i < nbins; i++) {
-            int[] peakpos = Fitter.findPeaks(counts[i]);
-            if (peakpos.length > npeaks) {
-                npeaks = peakpos.length;
-            }
-            peakpositions[i] = new double[peakpos.length];
-            x[i] = new double[peakpos.length];
-            int med = 0;
-            for (int j = 0; j < peakpos.length - 1; j++) {
-                int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
-                double[] arr1 = new double[med1 - med];
-                double[] x1 = new double[med1 - med];
-                for (int k = 0; k < med1 - med; k++) {
-                    arr1[k] = counts[i][k + med];
-                    x1[k] = k + med;
-                }
-                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * pixelsize;
-                med = med1;
-                x[i][j] = j;
-                double tresol = Fitter.resolution(x1, arr1, pixelsize, false);
-                resol = Math.max(resol, tresol);
-                meanresol += tresol;
-                countpeaks += 1;
-            }
-            double[] arr = new double[counts[i].length - med];
-            double[] xf = new double[counts[i].length - med];
-            for (int k = 0; k < counts[i].length - med; k++) {
-                arr[k] = counts[i][k + med];
-                xf[k] = k + med;
-            }
-            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * pixelsize;
-            x[i][peakpos.length - 1] = peakpos.length - 1;
-            double tresol = Fitter.resolution(xf, arr, pixelsize, false);
-            resol = Math.max(resol, tresol);
-            meanresol += tresol;
-            countpeaks += 1;
-        }
-
-        double[] residuals = new double[npeaks * nbins];
-        for (int j = 0; j < npeaks; j++) {
-            double[] newx = new double[nbins];
-            double[] newpos = new double[nbins];
-            for (int i = 0; i < nbins; i++) {
-                newx[i] = i;
-                newpos[i] = peakpositions[i][j];
-            }
-            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos);
-            System.arraycopy(tresiduals, 0, residuals, j * nbins, nbins);
-        }
-        double[] a = Tools.getMinMax(residuals);
+        Overlay list = new Overlay();
+        myoutput r1 = Calculate(list, 0.95);
+        double[] a1 = Tools.getMinMax(r1.residuals);
+        myoutput r2 = Calculate(list, 0.75);
+        double[] a2 = Tools.getMinMax(r2.residuals);
+        imp.setOverlay(list);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
         rt.addValue("Test", "Number of bins: ");
-        rt.addValue("Value", nbins);
+        rt.addValue("UFOV", r1.data.nbins);
+        rt.addValue("CFOV", r2.data.nbins);
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic Resolution in " + AxisRes + "(mm): ");
-        rt.addValue("Value", IJ.d2s(resol, 4, 9));
+        rt.addValue("Test", "Worst Intrinsic Resolution in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.resol, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.resol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic Resolution in " + AxisRes + "(mm): ");
-        rt.addValue("Value", IJ.d2s(meanresol / countpeaks, 4, 9));
+        rt.addValue("Test", "Mean Intrinsic Resolution in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.meanresol, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.meanresol, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Absolute Linearity in " + AxisLin + "(mm): ");
-        rt.addValue("Value", IJ.d2s(a[1], 4, 9));
+        rt.addValue("Test", "Absolute Linearity in " + r1.data.AxisLin + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(a1[1], 4, 9));
+        rt.addValue("CFOV", IJ.d2s(a2[1], 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Differential Linearity in " + AxisLin + "(mm): ");
-        rt.addValue("Value", IJ.d2s(Math.sqrt(MathUtils.sqrsum(residuals) / (residuals.length * (residuals.length - 1))), 4, 9));
+        rt.addValue("Test", "Differential Linearity in " + r1.data.AxisLin + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r1.residuals) / (r1.residuals.length * (r1.residuals.length - 1))), 4, 9));
+        rt.addValue("CFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r2.residuals) / (r2.residuals.length * (r2.residuals.length - 1))), 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
     }
