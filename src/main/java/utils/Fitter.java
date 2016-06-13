@@ -19,6 +19,7 @@ import ij.util.*;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.util.*;
+import static utils.Plotter.*;
 
 /**
  *
@@ -61,10 +62,13 @@ public class Fitter {
      * @param yi array with y values
      * @return an array containing the residuals of the fit
      */
-    public static double[] getResidualsinLinearFit(double[] xi, double[] yi) {
+    public static double[] getResidualsinLinearFit(double[] xi, double[] yi, boolean showplot) {
         CurveFitter cf = new CurveFitter(xi, yi);
         cf.setStatusAndEsc("Optimization: Iteration ", true);
         cf.doFit(CurveFitter.STRAIGHT_LINE, false);
+        if (showplot) {
+            Plotter.plot(cf, false);
+        }
         return cf.getResiduals();
     }
 
