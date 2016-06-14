@@ -22,6 +22,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
+import java.awt.Color;
 import java.util.*;
 import java.util.stream.*;
 import utils.*;
@@ -152,6 +153,7 @@ public class IntResol_Linearity implements PlugInFilter {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
+        UFOV.setStrokeColor(Color.yellow);
 
         for (result.data = getCounts(Method, UFOV); result.data.counts[(int) result.data.nbins / 2][0] > is.max * 0.1;) {
             UFOV = RoiEnlarger.enlarge(UFOV, -1);

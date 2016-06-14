@@ -129,10 +129,16 @@ public class Constants {
         ip2.setThreshold(min, ip2.getStatistics().max, ImageProcessor.BLACK_AND_WHITE_LUT);
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
-        FPoint2D[] points = getContainedPoints(roi);
         //ConvexHull ch = new ConvexHull(points);
         //points = ch.getConvexHull();
-        PolygonRoi CHroi = new PolygonRoi(FPoint2D.getXPoints(points), FPoint2D.getYPoints(points), Roi.POLYGON);
+        PolygonRoi CHroi;
+        if (IJ.getVersion().contains("1.51")) {
+            CHroi = new PolygonRoi(roi.getContainedFloatPoints(), Roi.POLYGON);
+        } else {
+            FPoint2D[] points = getContainedPoints(roi);
+            CHroi = new PolygonRoi(FPoint2D.getXPoints(points), FPoint2D.getYPoints(points), Roi.POLYGON);
+        }
+
         CHroi = new PolygonRoi(CHroi.getConvexHull(), Roi.POLYGON);
 
         //the final roi shall be a fraction of current roi
