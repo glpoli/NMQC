@@ -21,6 +21,8 @@ import ij.process.*;
 import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
 import ij.plugin.filter.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Polygon;
 import utils.FPoint2D;
 import utils.*;
@@ -98,6 +100,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         ImagePlus imp2 = new ImagePlus("Uniformity image", ip2);
         ImageStatistics is2 = imp2.getStatistics();
         Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        FOV.setStrokeColor(Color.yellow);
         double unif = is2.mean;
 
         imp.setSlice(send);
@@ -116,13 +119,20 @@ public class Tomographic_Contrast implements PlugInFilter {
         Polygon maxs = mf.getMaxima(ip2, unif, true);
         Overlay list = new Overlay();
         list.add(FOV);
+        TextRoi.setFont(Font.SERIF, 5, Font.PLAIN, true);
+        TextRoi.setGlobalJustification(TextRoi.CENTER);
+        //TextRoi.setColor(Color.red);
         for (int i = 0; i < maxs.npoints; i++) {
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
             if (contrast > 50) {
                 PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
-                list.add(tpoint, "Sphere " + i);
+                tpoint.setFillColor(Color.yellow);
+                list.add(tpoint, "Sphere " + (i+1));
+                TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], ""+(i+1));
+                text.setStrokeColor(Color.red);
+                list.add(text);
                 rt.incrementCounter();
-                rt.addValue("Sphere", i);
+                rt.addValue("Sphere", i+1);
                 rt.addValue("x", maxs.xpoints[i]);
                 rt.addValue("y", maxs.ypoints[i]);
                 rt.addValue("Contrast", contrast);
