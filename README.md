@@ -21,8 +21,16 @@ Current capabilities
     - Use must provide a ROI containing a relevant portion of ONLY one quadrant 	
   6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom (NEMA)
-    - User must provide a ROI containing ONLY the relevant part of the image
-    - Limitation: the ROI cant include octagonal or circular shapes
+	- Automatically detects UFOV and CFOV
+  7. Tomographic Contrast
+    - Image must be a 3D reconstruction from an Jasczak Phantom acquisition
+	- User shall provide a number referring a uniformity region frame and another for the desired frame for contrast calculation
+	- Automatically detects phantom border and returns the positions of every sphere with more than 50% contrast (even artifacts!), user shall discriminate which detection is correct
+	
+Work in Progress
+
+  1. Tomographic Uniformity
+    - The procedure is not clear in the bibliography, however we implemented rings contrast
 	
 Tools
 
