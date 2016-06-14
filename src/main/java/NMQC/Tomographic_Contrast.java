@@ -100,7 +100,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         ImagePlus imp2 = new ImagePlus("Uniformity image", ip2);
         ImageStatistics is2 = imp2.getStatistics();
         Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
-        FOV.setStrokeColor(Color.yellow);
+        FOV.setStrokeColor(Color.blue);
         double unif = is2.mean;
 
         imp.setSlice(send);
