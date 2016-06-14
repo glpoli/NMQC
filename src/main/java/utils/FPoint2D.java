@@ -96,6 +96,14 @@ public class FPoint2D implements Comparable<FPoint2D> {
         }
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.X) ^ (Double.doubleToLongBits(this.X) >>> 32));
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.Y) ^ (Double.doubleToLongBits(this.Y) >>> 32));
+        return hash;
+    }
+
     public int compareTo(FPoint2D p) {
         // compares two points in the plane according to the polar angle they
         // form with the comparator point of this object

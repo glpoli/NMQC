@@ -66,6 +66,7 @@ public class Planar_Uniformity implements PlugInFilter {
         double scale = 1.0 / shrinkfactor;
         Roi lFOV = RoiScaler.scale(sFOV, scale, scale, false);
         lFOV = RoiEnlarger.enlarge(lFOV, -1);//To avoid boundaries
+        lFOV.setStrokeColor(Color.yellow);
         Overlay list = new Overlay();
         list.add(lFOV);
         float[] kernel = {1, 2, 1, 2, 4, 2, 1, 2, 1};
