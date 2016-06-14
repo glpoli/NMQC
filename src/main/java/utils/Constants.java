@@ -30,7 +30,7 @@ import java.util.*;
  */
 public class Constants {
 
-    public static int NEMAWIDTH = 5;
+    public static int NEMAWIDTH = 8;
 
     public static int findMiddlePointinTwoPeaks(double[] array) {
         int[] peakpos = Fitter.findPeaks(array);
@@ -130,9 +130,10 @@ public class Constants {
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
         FPoint2D[] points = getContainedPoints(roi);
-        ConvexHull ch = new ConvexHull(points);
-        points = ch.getConvexHull();
+        //ConvexHull ch = new ConvexHull(points);
+        //points = ch.getConvexHull();
         PolygonRoi CHroi = new PolygonRoi(FPoint2D.getXPoints(points), FPoint2D.getYPoints(points), Roi.POLYGON);
+        CHroi = new PolygonRoi(CHroi.getConvexHull(), Roi.POLYGON);
 
         //the final roi shall be a fraction of current roi
         double theight = CHroi.getBounds().height;
