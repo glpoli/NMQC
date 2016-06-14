@@ -20,8 +20,10 @@ import ij.gui.*;
 import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
 import java.util.*;
+import java.util.stream.*;
 import utils.*;
 
 /**
@@ -142,13 +144,21 @@ public class IntResol_Linearity implements PlugInFilter {
         }
     }
 
+    private double[] toPrimitive(Double[] array) {
+        return Stream.of(array).mapToDouble(Double::doubleValue).toArray();
+    }
+
     public myoutput Calculate(Overlay list, double cutoff) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
+
+        for (result.data = getCounts(Method, UFOV); result.data.counts[(int) result.data.nbins / 2][0] > is.max * 0.1;) {
+            UFOV = RoiEnlarger.enlarge(UFOV, -1);
+            result.data = getCounts(Method, UFOV);
+        }
         list.add(UFOV);
 
-        result.data = getCounts(Method, UFOV);
         int npeaks = result.data.counts[(int) result.data.nbins / 2].length;
         double[] central = new double[npeaks];
         System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
@@ -156,27 +166,16 @@ public class IntResol_Linearity implements PlugInFilter {
         npeaks = lpeakpos.length;
         double[][] peakpositions = new double[result.data.nbins][npeaks];
         double[][] x = new double[result.data.nbins][npeaks];
-        /*for (int i = 0; i < result.data.nbins; i++) {
-            for (int j = 0; j < npeaks; j++) {
-                x[i][j] = j;
-                peakpositions[i][j] = lpeakpos[j];
-            }
-        }*/
 
         int countpeaks = 0;
         for (int i = 0; i < result.data.nbins; i++) {
             IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
-            int xshift = 0;
-            while ((peakpos[0] - lpeakpos[xshift]) * result.data.pixelsize > NemaSep / 2) {
-                xshift += 1;
-                if (xshift > npeaks) {
-                    IJ.error("Imágen no válida");
-                    return null;
-                }
+            if (peakpos.length != npeaks) {
+                continue;
             }
             int med = 0;
-            for (int j = 0; j < peakpos.length - 1; j++) {
+            for (int j = med == 0 ? 0 : 1; j < npeaks - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
                 double[] arr1 = new double[med1 - med];
                 double[] x1 = new double[med1 - med];
@@ -184,9 +183,9 @@ public class IntResol_Linearity implements PlugInFilter {
                     arr1[k] = result.data.counts[i][k + med];
                     x1[k] = k + med;
                 }
-                peakpositions[i][j + xshift] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
                 med = med1;
-                x[i][j + xshift] = j + xshift;
+                x[i][j] = j;
                 double tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
                 result.resol = Math.max(result.resol, tresol);
                 result.meanresol += tresol;
@@ -198,8 +197,8 @@ public class IntResol_Linearity implements PlugInFilter {
                 arr[k] = result.data.counts[i][k + med];
                 xf[k] = k + med;
             }
-            peakpositions[i][peakpos.length - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
-            x[i][peakpos.length - 1] = peakpos.length - 1;
+            peakpositions[i][npeaks - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
+            x[i][npeaks - 1] = npeaks - 1;
             double tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
             result.resol = Math.max(result.resol, tresol);
             result.meanresol += tresol;
@@ -210,20 +209,18 @@ public class IntResol_Linearity implements PlugInFilter {
         result.residuals = new double[npeaks * result.data.nbins];
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
-            ArrayList<double> lnewx = new ArrayList<double>();
-            ArrayList<double> lnewpos = new ArrayList<double>();
-            //double[] newx = new double[result.data.nbins];
-            //double[] newpos = new double[result.data.nbins];
+            ArrayList<Double> lnewx = new ArrayList();
+            ArrayList<Double> lnewpos = new ArrayList();
             for (int i = 0; i < result.data.nbins; i++) {
                 if (peakpositions[i][j] != 0) {
-                    lnewx.add(i);
+                    lnewx.add((double) i);
                     lnewpos.add(peakpositions[i][j]);
                 }
             }
-            double[] newx = (double[])lnewx.toArray();
-            double[] newpos = (double[])lnewpos.toArray();
-            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, true);
-            System.arraycopy(tresiduals, 0, result.residuals, j * result.data.nbins, result.data.nbins);
+            double[] newx = toPrimitive(lnewx.toArray(new Double[0]));
+            double[] newpos = toPrimitive(lnewpos.toArray(new Double[0]));
+            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
+            System.arraycopy(tresiduals, 0, result.residuals, 0, tresiduals.length);
         }
         IJ.showProgress(1.0);
         return result;
