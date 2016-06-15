@@ -19,7 +19,9 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
+import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
+import java.awt.Color;
 import utils.*;
 
 /**
@@ -29,7 +31,7 @@ import utils.*;
 public class Four_Bar_Phantom implements PlugInFilter {
 
     private ImagePlus imp;
-    private Roi roi;
+    //private Roi roi;
 
     /**
      *
@@ -47,11 +49,11 @@ public class Four_Bar_Phantom implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-        roi = imp.getRoi();
+        /*roi = imp.getRoi();
         if (roi == null) {
             IJ.error("Rectangular selection required");
             return DONE;
-        }
+        }*/
         this.imp = imp;
         return DOES_ALL;
     }
@@ -66,6 +68,11 @@ public class Four_Bar_Phantom implements PlugInFilter {
         //int w = ip.getWidth();
         //int h = ip.getHeight();
         Calibration cal = imp.getCalibration();
+        Roi roi = Constants.getThreshold(imp, imp.getStatistics().max*0.1, 0.95);
+        roi = RoiEnlarger.enlarge(roi, roi.getFloatWidth()/4);
+        roi = new Roi(roi.getBounds());
+        roi.setStrokeColor(Color.yellow);
+        imp.setRoi(roi);
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
         float[][] pixels = ip.getFloatArray();

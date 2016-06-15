@@ -58,7 +58,7 @@ public class Planar_Uniformity implements PlugInFilter {
         return DOES_ALL;
     }
 
-    private void getUniformity(ImagePlus imp, Roi sFOV, int shrinkfactor, ResultsTable rt) {
+    private FPoint2D getUniformity(ImagePlus imp, Roi sFOV, int shrinkfactor) {
         Binner bin = new Binner();
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), shrinkfactor, shrinkfactor, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
@@ -144,8 +144,7 @@ public class Planar_Uniformity implements PlugInFilter {
         imp2.show();
         //RM.runCommand(imp2, "Show All");
 
-        rt.addValue("Integral Uniformity", IU);
-        rt.addValue("Differential Uniformity", DU);
+        return new FPoint2D(IU, DU);
     }
 
     /**
@@ -159,20 +158,43 @@ public class Planar_Uniformity implements PlugInFilter {
 
         Roi FOV;
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
-        ImageStatistics is = imp.getStatistics();
+        double gmax = imp.getStatistics().max;
+
+        FOV = Constants.getThreshold(imp, gmax*0.1, 0.95);
+        FOV.setStrokeColor(Color.yellow);
+        imp.setRoi(FOV);
+        ImageStatistics is1 = imp.getStatistics();
+        imp.deleteRoi();
+        list.add(FOV);
+        FPoint2D UFOV = getUniformity(imp, FOV, shrinkfactor);
+        FOV = Constants.getThreshold(imp, gmax*0.1, 0.75);
+        FOV.setStrokeColor(Color.red);
+        imp.setRoi(FOV);
+        ImageStatistics is2 = imp.getStatistics();
+        imp.deleteRoi();
+        list.add(FOV);
+        FPoint2D CFOV = getUniformity(imp, FOV, shrinkfactor);
 
         rt.incrementCounter();
-        rt.addValue("ROI", "UFOV");
-        FOV = Constants.getThreshold(imp, is.min + 1, 0.95);
-        list.add(FOV);
-        getUniformity(imp, FOV, shrinkfactor, rt);
-
+        rt.addValue("Test", "Differential Uniformity (%)");
+        rt.addValue("UFOV", UFOV.getY());
+        rt.addValue("CFOV", CFOV.getY());
         rt.incrementCounter();
-        rt.addValue("ROI", "CFOV");
-
-        FOV = Constants.getThreshold(imp, is.min + 1, 0.75);
-        list.add(FOV);
-        getUniformity(imp, FOV, shrinkfactor, rt);
+        rt.addValue("Test", "Integral Uniformity (%)");
+        rt.addValue("UFOV", UFOV.getX());
+        rt.addValue("CFOV", CFOV.getX());   
+        rt.incrementCounter();
+        rt.addValue("Test", "Average Pixel Value");
+        rt.addValue("UFOV", is1.mean);
+        rt.addValue("CFOV", is2.mean);
+        rt.incrementCounter();
+        rt.addValue("Test", "Maximum Pixel Value");
+        rt.addValue("UFOV", is1.max);
+        rt.addValue("CFOV", is2.max);
+        rt.incrementCounter();
+        rt.addValue("Test", "Minimum Pixel Value");
+        rt.addValue("UFOV", is1.min);
+        rt.addValue("CFOV", is2.min);
 
         rt.showRowNumbers(true);
         rt.show("Planar Uniformity: " + imp.getTitle());
