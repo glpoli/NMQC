@@ -15,11 +15,11 @@
  */
 package utils;
 
+import ij.*;
 import ij.util.*;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.util.*;
-import static utils.Plotter.*;
 
 /**
  *
@@ -162,6 +162,26 @@ public class Fitter {
         Arrays.sort(peakpos);
         //PlotProfile(yi);
         return peakpos;
+    }
+    
+    public static int findMiddlePointinTwoPeaks(double[] array) {
+        int[] peakpos = Fitter.findPeaks(array);
+        if (peakpos.length < 2) {
+            IJ.error("Two bars phantom needed");
+            return 0;
+        }
+        FPoint2D maximo1 = new FPoint2D(0, 0);
+        FPoint2D maximo2 = new FPoint2D(0, 0);
+        for (int value : peakpos) {
+            if (array[value] > maximo1.getY()) {
+                maximo2.assign(maximo1);
+                maximo1.assign(value, array[value]);
+            } else if (array[value] > maximo2.getY() && array[value] < maximo1.getY()) {
+                maximo2.assign(value, array[value]);
+            }
+        }
+
+        return (int) (0.5 * (maximo1.getX() + maximo2.getX()));
     }
 
 }

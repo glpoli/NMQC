@@ -133,7 +133,7 @@ public class SSR_PxSz implements PlugInFilter {
             }
         }
 
-        int med = Constants.findMiddlePointinTwoPeaks(suma);
+        int med = Fitter.findMiddlePointinTwoPeaks(suma);
         double[] arr1 = new double[med];
         double[] x1 = new double[med];
         double[] arr2 = new double[size - med + 1];
