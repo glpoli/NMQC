@@ -15,7 +15,7 @@ Current capabilities
     - User must provide a ROI containing ONLY the relevant part of the image
   4. Four Bar Phantom
     - Image must be a Four bar phantom (User made) acquisition
-	- User must provide a ROI containing the whole phantom and approximately centred on it
+	- Automatically detects a ROI containing the whole phantom and centred on it
   5. Quadrant Bar Phantom
     - Image must be a Quadrant Bar (NEMA) acquisition
     - Use must provide a ROI containing a relevant portion of ONLY one quadrant 	
