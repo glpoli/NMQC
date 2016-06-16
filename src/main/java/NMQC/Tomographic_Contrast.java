@@ -24,7 +24,6 @@ import ij.plugin.filter.*;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Polygon;
-import utils.FPoint2D;
 import utils.*;
 
 /**
@@ -67,6 +66,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         //rt.addValue("ROI", "UFOV");
 
         int ns = imp.getStackSize();
+        ImageStack stack = imp.getImageStack();
         int sinit;
         int send;
         boolean coldsph = true;
@@ -88,10 +88,10 @@ public class Tomographic_Contrast implements PlugInFilter {
         }
         float[][] ip2mat = new float[imp.getWidth()][imp.getHeight()];
 
-        imp.setSlice(sinit);
-        float[][] pixels = imp.getProcessor().getFloatArray();
-        for (int i = 0; i < imp.getWidth(); i++) {
-            for (int j = 0; j < imp.getHeight(); j++) {
+        ImageProcessor ip1 = stack.getProcessor(sinit);
+        float[][] pixels = ip1.getFloatArray();
+        for (int i = 0; i < ip1.getWidth(); i++) {
+            for (int j = 0; j < ip1.getHeight(); j++) {
                 ip2mat[i][j] += pixels[i][j];
             }
         }
@@ -99,14 +99,14 @@ public class Tomographic_Contrast implements PlugInFilter {
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Uniformity image", ip2);
         ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
         FOV.setStrokeColor(Color.blue);
         double unif = is2.mean;
 
-        imp.setSlice(send);
-        pixels = imp.getProcessor().getFloatArray();
-        for (int i = 0; i < imp.getWidth(); i++) {
-            for (int j = 0; j < imp.getHeight(); j++) {
+        ip1 = stack.getProcessor(send);
+        pixels = ip1.getFloatArray();
+        for (int i = 0; i < ip1.getWidth(); i++) {
+            for (int j = 0; j < ip1.getHeight(); j++) {
                 ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
             }
         }
@@ -127,22 +127,21 @@ public class Tomographic_Contrast implements PlugInFilter {
             if (contrast > 50) {
                 PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
                 tpoint.setFillColor(Color.yellow);
-                list.add(tpoint, "Sphere " + (i+1));
-                TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], ""+(i+1));
+                list.add(tpoint, "Sphere " + (i + 1));
+                TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
                 text.setStrokeColor(Color.red);
                 list.add(text);
                 rt.incrementCounter();
-                rt.addValue("Sphere", i+1);
+                rt.addValue("Sphere", i + 1);
                 rt.addValue("x", maxs.xpoints[i]);
                 rt.addValue("y", maxs.ypoints[i]);
                 rt.addValue("Contrast", contrast);
             }
         }
-
-        ImagePlus ip1 = new ImagePlus(imp.getTitle() + ":Frame " + send, imp.getProcessor().duplicate());
         list.drawNames(true);
-        ip1.setOverlay(list);
-        ip1.show();
+        ImagePlus imp1 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip1.duplicate());
+        imp1.setOverlay(list);
+        imp1.show();
 
         rt.showRowNumbers(false);
         rt.show("Tomographic Contrast " + imp.getTitle() + ": Frame " + send);

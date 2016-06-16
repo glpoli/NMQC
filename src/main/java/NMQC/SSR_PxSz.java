@@ -86,10 +86,10 @@ public class SSR_PxSz implements PlugInFilter {
             suma = new double[size];
 
             int init, fin, width;
-            if (roi.getFloatHeight() > Constants.NEMAWIDTH) {
-                init = (int) Math.floor((roi.getFloatHeight() - Constants.NEMAWIDTH) / 2);
-                fin = init + Constants.NEMAWIDTH;
-                width = Constants.NEMAWIDTH;
+            if (roi.getFloatHeight() > Commons.NEMAWIDTH) {
+                init = (int) Math.floor((roi.getFloatHeight() - Commons.NEMAWIDTH) / 2);
+                fin = init + Commons.NEMAWIDTH;
+                width = Commons.NEMAWIDTH;
             } else {
                 init = 0;
                 fin = (int) Math.floor(roi.getFloatHeight());
@@ -112,10 +112,10 @@ public class SSR_PxSz implements PlugInFilter {
             suma = new double[size];
 
             int init, fin, width;
-            if (roi.getFloatWidth() > Constants.NEMAWIDTH) {
-                init = (int) Math.floor((roi.getFloatWidth() - Constants.NEMAWIDTH) / 2);
-                fin = init + Constants.NEMAWIDTH;
-                width = Constants.NEMAWIDTH;
+            if (roi.getFloatWidth() > Commons.NEMAWIDTH) {
+                init = (int) Math.floor((roi.getFloatWidth() - Commons.NEMAWIDTH) / 2);
+                fin = init + Commons.NEMAWIDTH;
+                width = Commons.NEMAWIDTH;
             } else {
                 init = 0;
                 fin = (int) Math.floor(roi.getFloatWidth());

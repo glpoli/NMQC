@@ -182,11 +182,11 @@ public class Planar_Uniformity implements PlugInFilter {
         int shrinkfactor = Math.max(1, (int) Math.round(imp.getHeight() / 64));
         double gmax = imp.getStatistics().max;
 
-        FOV = Constants.getThreshold(imp, gmax * 0.1, 0.95);
+        FOV = Commons.getThreshold(imp, gmax * 0.1, 0.95);
         FOV.setStrokeColor(Color.yellow);
         list.add(FOV);
         outputvalues UFOV = getUniformity(imp, FOV, shrinkfactor);
-        FOV = Constants.getThreshold(imp, gmax * 0.1, 0.75);
+        FOV = Commons.getThreshold(imp, gmax * 0.1, 0.75);
         FOV.setStrokeColor(Color.red);
         list.add(FOV);
         outputvalues CFOV = getUniformity(imp, FOV, shrinkfactor);

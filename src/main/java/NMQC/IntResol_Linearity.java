@@ -152,7 +152,7 @@ public class IntResol_Linearity implements PlugInFilter {
     public myoutput Calculate(Overlay list, double cutoff) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
-        Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
+        Roi UFOV = Commons.getThreshold(imp, 0.1 * is.max, cutoff);
         UFOV.setStrokeColor(Color.yellow);
 
         for (result.data = getCounts(Method, UFOV); result.data.counts[(int) result.data.nbins / 2][0] > is.max * 0.1;) {

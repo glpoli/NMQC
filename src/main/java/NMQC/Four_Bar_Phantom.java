@@ -59,7 +59,7 @@ public class Four_Bar_Phantom implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
-        Roi roi = Constants.getThreshold(imp, imp.getStatistics().max * 0.1, 0.95);
+        Roi roi = Commons.getThreshold(imp, imp.getStatistics().max * 0.1, 0.95);
         roi = RoiEnlarger.enlarge(roi, roi.getFloatWidth() / 4);
         roi = new Roi(roi.getBounds());
         roi.setStrokeColor(Color.yellow);

@@ -28,7 +28,7 @@ import java.util.*;
  *
  * @author alex.vergara
  */
-public class Constants {
+public class Commons {
 
     public static int NEMAWIDTH = 8;
 
@@ -128,5 +128,7 @@ public class Constants {
         Roi UFOV = RoiEnlarger.enlarge(CHroi, pixelshrink);
         return UFOV;
     }
+    
+    
 
 }
