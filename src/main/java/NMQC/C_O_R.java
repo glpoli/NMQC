@@ -60,6 +60,7 @@ public class C_O_R implements PlugInFilter {
     public void run(ImageProcessor ip) {
 
         int ns = imp.getStackSize();
+        ImageStack stack = imp.getImageStack();
         Calibration cal = imp.getCalibration();
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
@@ -74,9 +75,9 @@ public class C_O_R implements PlugInFilter {
         String StartAnglekey = "0054,0200";
         String RotationDirectiokey = "0018,1140";
 
-        double ScanArc = Constants.getNumericValueFromInfo(Info, ScanArckey);
-        double StartAngle = Constants.getNumericValueFromInfo(Info, StartAnglekey);
-        String RotationDirection = Constants.getStringValueFromInfo(Info, RotationDirectiokey);
+        double ScanArc = Commons.getNumericValueFromInfo(Info, ScanArckey);
+        double StartAngle = Commons.getNumericValueFromInfo(Info, StartAnglekey);
+        String RotationDirection = Commons.getStringValueFromInfo(Info, RotationDirectiokey);
         double anglestep = 0;
         if (RotationDirection.contains("CCW")) {
             anglestep = ScanArc / ns;
@@ -89,9 +90,9 @@ public class C_O_R implements PlugInFilter {
         }
 
         for (int z = 1; z <= ns; z++) {
-            imp.setSlice(z);
+            ImageProcessor ip2 = stack.getProcessor(z);
             it[z - 1] = (StartAngle + z * anglestep) * 2 * Math.PI / 360;
-            ImageStatistics is = ip.getStatistics();
+            ImageStatistics is = ip2.getStatistics();
             cmx[z - 1] = is.xCenterOfMass;
             cmy[z - 1] = is.yCenterOfMass;
         }

@@ -116,6 +116,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
         rt.addValue("ROI", "UFOV");
 
         int ns = imp.getStackSize();
+        ImageStack stack = imp.getImageStack();
         int sinit;
         int send;
         if (ns > 1) {
@@ -134,23 +135,23 @@ public class Tomographic_Uniformity implements PlugInFilter {
         }
         float[][] ip2mat = new float[imp.getWidth()][imp.getHeight()];
         for (int z = sinit; z <= send; z++) {
-            imp.setSlice(z);
-            float[][] pixels = imp.getProcessor().getFloatArray();
-            for (int i = 0; i < imp.getWidth(); i++) {
-                for (int j = 0; j < imp.getHeight(); j++) {
+            ImageProcessor ip2 = stack.getProcessor(z);
+            float[][] pixels = ip2.getFloatArray();
+            for (int i = 0; i < ip2.getWidth(); i++) {
+                for (int j = 0; j < ip2.getHeight(); j++) {
                     ip2mat[i][j] += pixels[i][j];
                 }
             }
         }
-        for (int i = 0; i < imp.getWidth(); i++) {
-            for (int j = 0; j < imp.getHeight(); j++) {
+        for (int i = 0; i < stack.getWidth(); i++) {
+            for (int j = 0; j < stack.getHeight(); j++) {
                 ip2mat[i][j] /= send - sinit + 1;
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
         ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
         ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Constants.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        Roi FOV = Commons.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);

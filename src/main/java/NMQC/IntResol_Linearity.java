@@ -145,14 +145,10 @@ public class IntResol_Linearity implements PlugInFilter {
         }
     }
 
-    private double[] toPrimitive(Double[] array) {
-        return Stream.of(array).mapToDouble(Double::doubleValue).toArray();
-    }
-
     public myoutput Calculate(Overlay list, double cutoff) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
-        Roi UFOV = Constants.getThreshold(imp, 0.1 * is.max, cutoff);
+        Roi UFOV = Commons.getThreshold(imp, 0.1 * is.max, cutoff);
         UFOV.setStrokeColor(Color.yellow);
 
         for (result.data = getCounts(Method, UFOV); result.data.counts[(int) result.data.nbins / 2][0] > is.max * 0.1;) {
@@ -219,8 +215,8 @@ public class IntResol_Linearity implements PlugInFilter {
                     lnewpos.add(peakpositions[i][j]);
                 }
             }
-            double[] newx = toPrimitive(lnewx.toArray(new Double[0]));
-            double[] newpos = toPrimitive(lnewpos.toArray(new Double[0]));
+            double[] newx = Commons.toPrimitive(lnewx.toArray(new Double[0]));
+            double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
             double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
             System.arraycopy(tresiduals, 0, result.residuals, 0, tresiduals.length);
         }

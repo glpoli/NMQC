@@ -51,42 +51,45 @@ public class SSR_PxSz implements PlugInFilter {
         roi = imp.getRoi();
         if (roi == null) {
             IJ.error("Rectangular selection required");
-            return DONE;
+            return ROI_REQUIRED;
         }
         this.Method = arg;
         this.imp = imp;
         return DOES_ALL;
     }
 
-    /**
-     *
-     * @param ip The image processor
-     */
-    @Override
-    public void run(ImageProcessor ip) {
+    public static class outputvalues {
 
-        //int w = ip.getWidth();
-        //int h = ip.getHeight();
-        Calibration cal = imp.getCalibration();
+        FPoint2D resolution;
+        double PixelSize;
+        double HeaderPixelSize;
+
+        public outputvalues() {
+            resolution = new FPoint2D(0, 0);
+            PixelSize = 0;
+            HeaderPixelSize = 0;
+        }
+    }
+
+    public static outputvalues Calculate(ImagePlus imp1, Roi roi, String Method, double realdistance) {
+        outputvalues result = new outputvalues();
+        Calibration cal = imp1.getCalibration();
         double vw = cal.pixelWidth;
         double vh = cal.pixelHeight;
-        double pixelsize = 0;
         int size = 0;
         double[] suma = null;
-        String Axis = "";
-        float[][] pixels = ip.getFloatArray();
+        float[][] pixels = imp1.getProcessor().getFloatArray();
 
         if (Method.contains("Vertical")) {
-            pixelsize = vw;
+            result.HeaderPixelSize = vw;
             size = (int) (roi.getFloatWidth());
-            Axis="X";
             suma = new double[size];
 
             int init, fin, width;
-            if (roi.getFloatHeight() > Constants.NEMAWIDTH) {
-                init = (int) Math.floor((roi.getFloatHeight() - Constants.NEMAWIDTH) / 2);
-                fin = init + Constants.NEMAWIDTH;
-                width = Constants.NEMAWIDTH;
+            if (roi.getFloatHeight() > Commons.NEMAWIDTH) {
+                init = (int) Math.floor((roi.getFloatHeight() - Commons.NEMAWIDTH) / 2);
+                fin = init + Commons.NEMAWIDTH;
+                width = Commons.NEMAWIDTH;
             } else {
                 init = 0;
                 fin = (int) Math.floor(roi.getFloatHeight());
@@ -104,16 +107,15 @@ public class SSR_PxSz implements PlugInFilter {
             }
         }
         if (Method.contains("Horizontal")) {
-            pixelsize = vh;
+            result.HeaderPixelSize = vh;
             size = (int) (roi.getFloatHeight());
-            Axis="Y";
             suma = new double[size];
 
             int init, fin, width;
-            if (roi.getFloatWidth() > Constants.NEMAWIDTH) {
-                init = (int) Math.floor((roi.getFloatWidth() - Constants.NEMAWIDTH) / 2);
-                fin = init + Constants.NEMAWIDTH;
-                width = Constants.NEMAWIDTH;
+            if (roi.getFloatWidth() > Commons.NEMAWIDTH) {
+                init = (int) Math.floor((roi.getFloatWidth() - Commons.NEMAWIDTH) / 2);
+                fin = init + Commons.NEMAWIDTH;
+                width = Commons.NEMAWIDTH;
             } else {
                 init = 0;
                 fin = (int) Math.floor(roi.getFloatWidth());
@@ -131,7 +133,7 @@ public class SSR_PxSz implements PlugInFilter {
             }
         }
 
-        int med = Constants.findMiddlePointinTwoPeaks(suma);
+        int med = Fitter.findMiddlePointinTwoPeaks(suma);
         double[] arr1 = new double[med];
         double[] x1 = new double[med];
         double[] arr2 = new double[size - med + 1];
@@ -145,37 +147,48 @@ public class SSR_PxSz implements PlugInFilter {
             x2[i - med] = i;
         }
 
-        double res1 = Fitter.resolution(x1, arr1, pixelsize, false);
-        double res2 = Fitter.resolution(x2, arr2, pixelsize, false);
-
         double c1 = Fitter.peakpos(x1, arr1, false);
         double c2 = Fitter.peakpos(x2, arr2, false);
 
         double c = c2 - c1;
 
-        GenericDialog gd = new GenericDialog("Pixel Size in "+Axis);
+        result.PixelSize = realdistance / c;
+
+        result.resolution.assign(Fitter.resolution(x1, arr1, result.PixelSize, false), Fitter.resolution(x2, arr2, result.PixelSize, false));
+
+        return result;
+    }
+
+    /**
+     *
+     * @param ip The image processor
+     */
+    @Override
+    public void run(ImageProcessor ip) {
+
+        String Axis = Method.contains("Vertical") ? "X" : "Y";
+        GenericDialog gd = new GenericDialog("Pixel Size in " + Axis);
         gd.addNumericField("Enter distance between sources (cm):", 10, 2);
         gd.showDialog();
         if (gd.wasCanceled()) {
             return;
         }
         double d = gd.getNextNumber() * 10;
-        double realsize = d / c;
-
+        outputvalues res = Calculate(imp, roi, Method, d);
         ResultsTable rt1 = new ResultsTable();
         rt1.incrementCounter();
-        rt1.addValue("Real Pixel size(mm/px)", IJ.d2s(realsize, 4, 9));
-        rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(pixelsize, 4, 9));
-        rt1.addValue("Difference(%)", IJ.d2s((realsize - pixelsize) * 100 / realsize, 4, 9));
+        rt1.addValue("Real Pixel size(mm/px)", IJ.d2s(res.PixelSize, 4, 9));
+        rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(res.HeaderPixelSize, 4, 9));
+        rt1.addValue("Difference(%)", IJ.d2s((res.PixelSize - res.HeaderPixelSize) * 100 / res.PixelSize, 4, 9));
         rt1.showRowNumbers(true);
-        rt1.show("Pixel size in "+Axis+": "+imp.getTitle());
+        rt1.show("Pixel size in " + Axis + ": " + imp.getTitle());
 
         ResultsTable rt2 = new ResultsTable();
         rt2.incrementCounter();
-        rt2.addValue("Res1(mm)", res1);
-        rt2.addValue("Res2(mm)", res2);
+        rt2.addValue("Res1(mm)", res.resolution.getX());
+        rt2.addValue("Res2(mm)", res.resolution.getY());
         rt2.showRowNumbers(true);
-        rt2.show("Spatial resolution in "+Axis+": "+imp.getTitle());
+        rt2.show("Spatial resolution in " + Axis + ": " + imp.getTitle());
     }
 
     void showAbout() {
