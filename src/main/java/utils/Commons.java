@@ -147,6 +147,7 @@ public class Commons {
         for (Roi r : listroi) {
             if (r.contains((int) p.getX(), (int) p.getY())) {
                 roi = r;
+                break;
             }
         }
         return roi;
