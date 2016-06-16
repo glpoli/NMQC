@@ -130,6 +130,12 @@ public class IntResol_Linearity implements PlugInFilter {
         return result;
     }
 
+    /**
+     * This are the output values from Calculate
+     * contains the maximum resolution, the mean resolution,
+     * some data and the residuals.
+     *
+     */
     public class myoutput {
 
         double resol;
@@ -145,18 +151,26 @@ public class IntResol_Linearity implements PlugInFilter {
         }
     }
 
+    /**
+     *
+     * @param list the overlay on which we add the calculated ROIs
+     * @param cutoff the cuttoff to calculate the ROIs
+     * @return several values
+     */
     public myoutput Calculate(Overlay list, double cutoff) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Commons.getThreshold(imp, 0.1 * is.max, cutoff);
         UFOV.setStrokeColor(Color.yellow);
 
+        // We check that the calculated roi doesnt collide with a line strip
         for (result.data = getCounts(Method, UFOV); result.data.counts[(int) result.data.nbins / 2][0] > is.max * 0.1;) {
-            UFOV = RoiEnlarger.enlarge(UFOV, -1);
-            result.data = getCounts(Method, UFOV);
+            UFOV = RoiEnlarger.enlarge(UFOV, -1); // the roi is colliding with a line strip, so we reduce it 1 pixel
+            result.data = getCounts(Method, UFOV); // the roi has been reduced so we calculate the data again
         }
         list.add(UFOV);
 
+        // getting the central array as reference for the number of peaks
         int npeaks = result.data.counts[(int) result.data.nbins / 2].length;
         double[] central = new double[npeaks];
         System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
@@ -169,11 +183,14 @@ public class IntResol_Linearity implements PlugInFilter {
         for (int i = 0; i < result.data.nbins; i++) {
             IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
+            // We avoid non rectangular zones
+            // TODO: enhancement, try to include non rectangular zones
             if (peakpos.length != npeaks) {
                 continue;
             }
+            // We split the array by finding the middle between two consecutive points 
             int med = 0;
-            for (int j = med == 0 ? 0 : 1; j < npeaks - 1; j++) {
+            for (int j = 0; j < npeaks - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
                 double[] arr1 = new double[med1 - med];
                 double[] x1 = new double[med1 - med];
@@ -203,8 +220,8 @@ public class IntResol_Linearity implements PlugInFilter {
             countpeaks += 1;
         }
         result.meanresol /= countpeaks;
-
         result.residuals = new double[npeaks * result.data.nbins];
+        // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
             ArrayList<Double> lnewx = new ArrayList();

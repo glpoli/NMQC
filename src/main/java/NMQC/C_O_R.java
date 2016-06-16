@@ -78,7 +78,7 @@ public class C_O_R implements PlugInFilter {
         double ScanArc = Commons.getNumericValueFromInfo(Info, ScanArckey);
         double StartAngle = Commons.getNumericValueFromInfo(Info, StartAnglekey);
         String RotationDirection = Commons.getStringValueFromInfo(Info, RotationDirectiokey);
-        double anglestep = 0;
+        double anglestep;
         if (RotationDirection.contains("CCW")) {
             anglestep = ScanArc / ns;
         } else if (RotationDirection.contains("CW")) {

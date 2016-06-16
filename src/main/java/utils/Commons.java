@@ -20,7 +20,6 @@ import ij.gui.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.process.*;
-import ij.util.ArrayUtil;
 import ij.util.Tools;
 import static ij.util.Tools.*;
 import java.awt.*;
@@ -35,10 +34,21 @@ public class Commons {
 
     public static int NEMAWIDTH = 8;
 
+    /**
+     *
+     * @param array the object array
+     * @return the array of object's primitives
+     */
     public static double[] toPrimitive(Double[] array) {
         return Stream.of(array).mapToDouble(Double::doubleValue).toArray();
     }
 
+    /**
+     *
+     * @param Info the result of ImagePlus.getInfoProperty();
+     * @param key the desired key to be returned
+     * @return the key value as string
+     */
     public static String getStringValueFromInfo(String Info, String key) {
         int i = Info.indexOf(key);
         if (i < 0) {
@@ -65,6 +75,12 @@ public class Commons {
         return Value.substring(i + sep.length());
     }
 
+    /**
+     *
+     * @param Info the result of ImagePlus.getInfoProperty();
+     * @param key the desired key to be returned
+     * @return the key value as number
+     */
     public static double getNumericValueFromInfo(String Info, String key) {
         return parseDouble(getStringValueFromInfo(Info, key));
     }
@@ -136,6 +152,13 @@ public class Commons {
         return UFOV;
     }
 
+    /**
+     *
+     * @param imp The image object
+     * @param p the point on which we calculate the boundary, this point is always inside final roi
+     * @param level the level to get isocontour
+     * @return the isocontour roi at specified level containing the input point
+     */
     public static Roi getObject(ImagePlus imp, Point p, double level) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         ImageStatistics is2 = ip2.getStatistics();
@@ -153,6 +176,13 @@ public class Commons {
         return roi;
     }
 
+    /**
+     *
+     * @param imp The image object
+     * @param p the points on which we calculate the boundaries, these points are always inside final rois
+     * @param level the level to get isocontour
+     * @return the isocontour roi at specified level containing all input points
+     */
     public static Overlay getObjects(ImagePlus imp, PointRoi p, double level) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         ImageStatistics is2 = ip2.getStatistics();
