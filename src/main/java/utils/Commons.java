@@ -139,7 +139,7 @@ public class Commons {
     public static Roi getObject(ImagePlus imp, Point p, double level) {
         ImageProcessor ip2 = imp.getProcessor().duplicate();
         ImageStatistics is2 = ip2.getStatistics();
-        ip2.setThreshold(Math.min(is2.max * level, ip2.getPixel((int) p.getX(), (int) p.getY())), is2.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ip2.setThreshold(Math.min(is2.max * level, ip2.getPixelValue((int) p.getX(), (int) p.getY())), is2.max, ImageProcessor.BLACK_AND_WHITE_LUT);
         ThresholdToSelection ts = new ThresholdToSelection();
         Roi roi = ts.convert(ip2);
         ShapeRoi Sroi = new ShapeRoi(roi);
