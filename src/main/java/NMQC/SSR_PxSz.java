@@ -51,7 +51,7 @@ public class SSR_PxSz implements PlugInFilter {
         roi = imp.getRoi();
         if (roi == null) {
             IJ.error("Rectangular selection required");
-            return DONE;
+            return ROI_REQUIRED;
         }
         this.Method = arg;
         this.imp = imp;

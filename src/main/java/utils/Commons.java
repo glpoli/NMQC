@@ -20,9 +20,12 @@ import ij.gui.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.process.*;
+import ij.util.ArrayUtil;
+import ij.util.Tools;
 import static ij.util.Tools.*;
 import java.awt.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  *
@@ -31,6 +34,10 @@ import java.util.*;
 public class Commons {
 
     public static int NEMAWIDTH = 8;
+
+    public static double[] toPrimitive(Double[] array) {
+        return Stream.of(array).mapToDouble(Double::doubleValue).toArray();
+    }
 
     public static String getStringValueFromInfo(String Info, String key) {
         int i = Info.indexOf(key);
@@ -128,7 +135,51 @@ public class Commons {
         Roi UFOV = RoiEnlarger.enlarge(CHroi, pixelshrink);
         return UFOV;
     }
-    
-    
+
+    public static Roi getObject(ImagePlus imp, Point p, double level) {
+        ImageProcessor ip2 = imp.getProcessor().duplicate();
+        ImageStatistics is2 = ip2.getStatistics();
+        ip2.setThreshold(Math.min(is2.max * level, ip2.getPixel((int) p.getX(), (int) p.getY())), is2.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ThresholdToSelection ts = new ThresholdToSelection();
+        Roi roi = ts.convert(ip2);
+        ShapeRoi Sroi = new ShapeRoi(roi);
+        Roi[] listroi = Sroi.getRois();
+        for (Roi r : listroi) {
+            if (r.contains((int) p.getX(), (int) p.getY())) {
+                roi = r;
+            }
+        }
+        return roi;
+    }
+
+    public static Overlay getObjects(ImagePlus imp, PointRoi p, double level) {
+        ImageProcessor ip2 = imp.getProcessor().duplicate();
+        ImageStatistics is2 = ip2.getStatistics();
+        int xmin = (int) p.getContainedPoints()[0].getX();
+        int ymin = (int) p.getContainedPoints()[0].getY();
+        double value = ip2.getPixelValue(xmin, ymin);
+        for (Point tp : p.getContainedPoints()) {
+            double nvalue = ip2.getPixelValue((int) tp.getX(), (int) tp.getY());
+            if (nvalue < value) {
+                value = nvalue;
+                xmin = (int) tp.getX();
+                ymin = (int) tp.getY();
+            }
+        }
+        ip2.setThreshold(Math.min(is2.max * level, ip2.getPixelValue(xmin, ymin)), is2.max, ImageProcessor.BLACK_AND_WHITE_LUT);
+        ThresholdToSelection ts = new ThresholdToSelection();
+        Roi roi = ts.convert(ip2);
+        ShapeRoi Sroi = new ShapeRoi(roi);
+        Roi[] listroi = Sroi.getRois();
+        Overlay result = new Overlay();
+        for (Roi r : listroi) {
+            for (Point tp : p.getContainedPoints()) {
+                if (r.contains((int) tp.getX(), (int) tp.getY())) {
+                    result.add(r);
+                }
+            }
+        }
+        return result;
+    }
 
 }
