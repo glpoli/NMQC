@@ -61,6 +61,7 @@ public class Select_Object implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
+        imp.deleteRoi();
         if (proi.getLength() > 1) {
             Overlay list = Commons.getObjects(imp, proi, 0.1);
             imp.setOverlay(list);

@@ -15,6 +15,7 @@
  */
 package utils;
 
+import ij.gui.*;
 import java.util.Arrays;
 
 /*
@@ -26,9 +27,13 @@ import java.util.Arrays;
  */
 public class ConvexHull {
 
-    private int n;
+    private final int n;
     private FPoint2D[] points;
 
+    /**
+     * Creator
+     * @param points the points around which we create the convex hull
+     */
     public ConvexHull(FPoint2D[] points) {
         this.n = points.length;
         this.points = points;
@@ -85,11 +90,24 @@ public class ConvexHull {
         return convex_hull_index;
     }
 
+    /**
+     *
+     * @return the convex hull as an array of points
+     */
     public FPoint2D[] getConvexHull() {
         int convex_hull_index = computeConvexHull();
         FPoint2D[] convex_hull_points = new FPoint2D[convex_hull_index];
         System.arraycopy(points, 0, convex_hull_points, 0, convex_hull_index);
         return convex_hull_points;
+    }
+    
+    /**
+     *
+     * @return the convex hull as a Polygon Roi
+     */
+    public PolygonRoi getConvexHullP() {
+        FPoint2D[] convex_hull_points = getConvexHull();
+        return new PolygonRoi(FPoint2D.getXPoints(convex_hull_points), FPoint2D.getYPoints(convex_hull_points), Roi.POLYGON);
     }
 
     private void swap(FPoint2D[] points, int index1, int index2) {

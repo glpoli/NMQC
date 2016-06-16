@@ -1,8 +1,8 @@
 # NMQC
 
-Nuclear Medicine Quality Control utilities
+## Nuclear Medicine Quality Control utilities
 
-Current capabilities
+### Current capabilities
 
   1. Centre of Rotation
     - Image must be a typical COR acquisition with point source
@@ -18,7 +18,7 @@ Current capabilities
 	- Automatically detects a ROI containing the whole phantom and centred on it
   5. Quadrant Bar Phantom
     - Image must be a Quadrant Bar (NEMA) acquisition
-    - Use must provide a ROI containing a relevant portion of ONLY one quadrant 	
+    - User must provide a rectangular ROI containing a relevant portion of ONLY one quadrant 	
   6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom (NEMA)
 	- Automatically detects UFOV and CFOV
@@ -27,12 +27,12 @@ Current capabilities
 	- User shall provide a number referring a uniformity region frame and another for the desired frame for contrast calculation
 	- Automatically detects phantom border and returns the positions of every sphere with more than 50% contrast (even artifacts!), user shall discriminate which detection is correct
 	
-Work in Progress
+### Work in Progress
 
   1. Tomographic Uniformity
     - The procedure is not clear in the bibliography, however we implemented rings contrast
 	
-Tools
+# Tools
 
   1. Geometric Mean
     - Useful to get the geometric mean in renal studies for antero-posterior views

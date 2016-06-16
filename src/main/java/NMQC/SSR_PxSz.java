@@ -58,6 +58,9 @@ public class SSR_PxSz implements PlugInFilter {
         return DOES_ALL;
     }
 
+    /**
+     * The output values for Calculate
+     */
     public static class outputvalues {
 
         FPoint2D resolution;
@@ -71,6 +74,14 @@ public class SSR_PxSz implements PlugInFilter {
         }
     }
 
+    /**
+     *
+     * @param imp1 The image
+     * @param roi The Roi
+     * @param Method The position of the bars
+     * @param realdistance The real distance between the two bars
+     * @return
+     */
     public static outputvalues Calculate(ImagePlus imp1, Roi roi, String Method, double realdistance) {
         outputvalues result = new outputvalues();
         Calibration cal = imp1.getCalibration();

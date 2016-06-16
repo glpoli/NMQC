@@ -86,35 +86,33 @@ public class Tomographic_Contrast implements PlugInFilter {
             sinit = 1;
             send = 1;
         }
-        float[][] ip2mat = new float[imp.getWidth()][imp.getHeight()];
-
-        ImageProcessor ip1 = stack.getProcessor(sinit);
-        float[][] pixels = ip1.getFloatArray();
-        for (int i = 0; i < ip1.getWidth(); i++) {
-            for (int j = 0; j < ip1.getHeight(); j++) {
-                ip2mat[i][j] += pixels[i][j];
-            }
-        }
-
-        FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        ImagePlus imp2 = new ImagePlus("Uniformity image", ip2);
+        
+        // Finding the mean 
+        ImageProcessor ip1 = stack.getProcessor(sinit).duplicate();
+        ImagePlus imp2 = new ImagePlus("Uniformity image", ip1);
         ImageStatistics is2 = imp2.getStatistics();
         Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
         FOV.setStrokeColor(Color.blue);
+        imp2.setRoi(FOV);
+        is2 = imp2.getStatistics();
         double unif = is2.mean;
 
+        // Building a temporary matrix to find the peaks
         ip1 = stack.getProcessor(send);
-        pixels = ip1.getFloatArray();
+        float[][] pixels = ip1.getFloatArray();
+        float[][] ip2mat = new float[ip1.getWidth()][ip1.getHeight()];
         for (int i = 0; i < ip1.getWidth(); i++) {
             for (int j = 0; j < ip1.getHeight(); j++) {
+                // If spheres are cold put them hot, if they are hot keep them as hot
                 ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
             }
         }
 
-        ip2 = new FloatProcessor(ip2mat);
+        FloatProcessor ip2 = new FloatProcessor(ip2mat);
         imp2 = new ImagePlus("Spheres image", ip2);
         imp2.setRoi(FOV);
 
+        // Finding all the peaks
         MaximumFinder mf = new MaximumFinder();
         Polygon maxs = mf.getMaxima(ip2, unif, true);
         Overlay list = new Overlay();
@@ -124,6 +122,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         //TextRoi.setColor(Color.red);
         for (int i = 0; i < maxs.npoints; i++) {
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+            // Exclude all peaks below 50% contrast
             if (contrast > 50) {
                 PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
                 tpoint.setFillColor(Color.yellow);

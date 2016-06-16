@@ -58,7 +58,7 @@ public class Planar_Uniformity implements PlugInFilter {
         return DOES_ALL;
     }
 
-    public class outputvalues {
+    private class outputvalues {
 
         double IU;
         double DU;
@@ -76,13 +76,16 @@ public class Planar_Uniformity implements PlugInFilter {
     }
 
     private outputvalues getUniformity(ImagePlus imp, Roi sFOV, int shrinkfactor) {
+        // Rebin the original image to achieve pixel size around 6mm
         Binner bin = new Binner();
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), shrinkfactor, shrinkfactor, Binner.SUM);
         ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
+        // Shrink the ROI too to perform the calculation
         double scale = 1.0 / shrinkfactor;
         Roi lFOV = RoiScaler.scale(sFOV, scale, scale, false);
         lFOV = RoiEnlarger.enlarge(lFOV, -1);//To avoid boundaries
         lFOV.setStrokeColor(Color.yellow);
+        // Getting the first results
         outputvalues result = new outputvalues();
         imp2.setRoi(lFOV);
         ImageStatistics is = imp2.getStatistics();
@@ -92,6 +95,7 @@ public class Planar_Uniformity implements PlugInFilter {
         imp2.deleteRoi();
         Overlay list = new Overlay();
         list.add(lFOV);
+        // Convolve the image as required by NEMA procedure
         float[] kernel = {1, 2, 1, 2, 4, 2, 1, 2, 1};
         Convolver cv = new Convolver();
         cv.setNormalize(true);
@@ -110,6 +114,7 @@ public class Planar_Uniformity implements PlugInFilter {
         for (int j = (int) Math.round(PBase.getY()); j < lFOV.getFloatHeight() + PBase.getY(); j++) {
             for (int i = (int) Math.round(PBase.getX()); i < lFOV.getFloatWidth() + PBase.getX(); i++) {
                 if (lFOV.contains(i, j)) {
+                    // getting pixel value global boundaries
                     if (pixels[i][j] < globalmin) {
                         globalmin = pixels[i][j];
                         minvalue.assign(i, j);
@@ -118,7 +123,7 @@ public class Planar_Uniformity implements PlugInFilter {
                         globalmax = pixels[i][j];
                         maxvalue.assign(i, j);
                     }
-                    // By rows
+                    // Finding local boundaries by rows
                     float localmin = pixels[i][j];
                     float localmax = pixels[i][j];
                     for (int k = -2; k <= 2; k++) {
@@ -133,7 +138,7 @@ public class Planar_Uniformity implements PlugInFilter {
                         }
                     }
                     result.DU = Math.max(result.DU, MathUtils.Contrast(localmin, localmax));
-                    // By columns
+                    // Finding local boundaries by columns
                     localmin = pixels[i][j];
                     localmax = pixels[i][j];
                     for (int l = -2; l <= 2; l++) {
@@ -154,6 +159,7 @@ public class Planar_Uniformity implements PlugInFilter {
 
         result.IU = MathUtils.Contrast(globalmin, globalmax);
 
+        // Add the global boundaries as displayed points
         PointRoi minPointRoi = new PointRoi(minvalue.getX(), minvalue.getY());
         minPointRoi.setStrokeColor(Color.blue);
         list.add(minPointRoi);
