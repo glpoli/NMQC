@@ -18,7 +18,7 @@ package NMQC;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
+import ij.gui.GenericDialog;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
@@ -61,15 +61,14 @@ public class Tomographic_Contrast implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
+        // Variables
         ResultsTable rt = new ResultsTable();
-        //rt.incrementCounter();
-        //rt.addValue("ROI", "UFOV");
-
         int ns = imp.getStackSize();
         ImageStack stack = imp.getImageStack();
         int sinit;
         int send;
         boolean coldsph = true;
+        // Dialog
         if (ns > 1) {
             GenericDialog gd = new GenericDialog("Tomographic Contrast.");
             gd.addNumericField("Entre el corte de uniformidad", 1, 0);
@@ -87,7 +86,7 @@ public class Tomographic_Contrast implements PlugInFilter {
             send = 1;
         }
 
-        // Finding the mean 
+        // Finding the mean and the tolerance 
         ImageProcessor ip1 = stack.getProcessor(sinit).duplicate();
         ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
         ImageStatistics is1 = imp1.getStatistics();
@@ -96,7 +95,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         imp1.setRoi(FOV);
         is1 = imp1.getStatistics();
         double unif = is1.mean;
-        double tolerance = is1.stdDev*2;
+        double tolerance = is1.stdDev * 2;
 
         // Building a temporary matrix to find the peaks
         ImageProcessor ip2 = stack.getProcessor(send);
@@ -110,38 +109,35 @@ public class Tomographic_Contrast implements PlugInFilter {
                 }
             }
         }
-
         FloatProcessor ipt = new FloatProcessor(ip2mat);
-        /*ImagePlus imp2 = new ImagePlus("Spheres image", ip2);
-        imp2.setRoi(FOV);*/
 
         // Finding all the peaks
         MaximumFinder mf = new MaximumFinder();
         Polygon maxs = mf.getMaxima(ipt, tolerance, true);
+        
+        // Final processing
         Overlay list = new Overlay();
         list.add(FOV);
         TextRoi.setFont(Font.SERIF, 5, Font.PLAIN, true);
         TextRoi.setGlobalJustification(TextRoi.CENTER);
-        //TextRoi.setColor(Color.red);
         for (int i = 0; i < maxs.npoints; i++) {
+            // The contrast is calculated with original matrix using the positions of the calculated maximas
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
-            IJ.log((new FPoint2D(maxs.xpoints[i], maxs.ypoints[i]).Print()) + " - Contrast: " + contrast);
-            // Exclude all peaks below 50% contrast
-            //if (contrast > 50) {
-                PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
-                tpoint.setFillColor(Color.yellow);
-                list.add(tpoint, "Sphere " + (i + 1));
-                TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
-                text.setStrokeColor(Color.red);
-                list.add(text);
-                rt.incrementCounter();
-                rt.addValue("Sphere", i + 1);
-                rt.addValue("x", maxs.xpoints[i]);
-                rt.addValue("y", maxs.ypoints[i]);
-                rt.addValue("value", ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
-                rt.addValue("mean", unif);
-                rt.addValue("Contrast", contrast);
-            //}
+            // Adding points in the position of the maximas
+            PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
+            tpoint.setFillColor(Color.yellow);
+            list.add(tpoint, "Sphere " + (i + 1));
+            TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
+            text.setStrokeColor(Color.orange);
+            list.add(text);
+            // Creating the results table
+            rt.incrementCounter();
+            rt.addValue("Sphere", i + 1);
+            rt.addValue("x", maxs.xpoints[i]);
+            rt.addValue("y", maxs.ypoints[i]);
+            rt.addValue("value", ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+            rt.addValue("mean", unif);
+            rt.addValue("Contrast", contrast);
         }
         list.drawNames(true);
         ImagePlus imp2 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip2.duplicate());
