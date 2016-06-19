@@ -18,7 +18,7 @@ package NMQC;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
+import ij.gui.GenericDialog;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
@@ -61,15 +61,14 @@ public class Tomographic_Contrast implements PlugInFilter {
      */
     @Override
     public void run(ImageProcessor ip) {
+        // Variables
         ResultsTable rt = new ResultsTable();
-        //rt.incrementCounter();
-        //rt.addValue("ROI", "UFOV");
-
         int ns = imp.getStackSize();
         ImageStack stack = imp.getImageStack();
         int sinit;
         int send;
         boolean coldsph = true;
+        // Dialog
         if (ns > 1) {
             GenericDialog gd = new GenericDialog("Tomographic Contrast.");
             gd.addNumericField("Entre el corte de uniformidad", 1, 0);
@@ -86,61 +85,64 @@ public class Tomographic_Contrast implements PlugInFilter {
             sinit = 1;
             send = 1;
         }
-        
-        // Finding the mean 
+
+        // Finding the mean and the tolerance 
         ImageProcessor ip1 = stack.getProcessor(sinit).duplicate();
-        ImagePlus imp2 = new ImagePlus("Uniformity image", ip1);
-        ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
+        ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
+        ImageStatistics is1 = imp1.getStatistics();
+        Roi FOV = Commons.getThreshold(imp1, 0.1 * is1.max, 0.9); // 10% of max value for threshold
         FOV.setStrokeColor(Color.blue);
-        imp2.setRoi(FOV);
-        is2 = imp2.getStatistics();
-        double unif = is2.mean;
+        imp1.setRoi(FOV);
+        is1 = imp1.getStatistics();
+        double unif = is1.mean;
+        double tolerance = is1.stdDev * 2;
 
         // Building a temporary matrix to find the peaks
-        ip1 = stack.getProcessor(send);
-        float[][] pixels = ip1.getFloatArray();
-        float[][] ip2mat = new float[ip1.getWidth()][ip1.getHeight()];
-        for (int i = 0; i < ip1.getWidth(); i++) {
-            for (int j = 0; j < ip1.getHeight(); j++) {
-                // If spheres are cold put them hot, if they are hot keep them as hot
-                ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
+        ImageProcessor ip2 = stack.getProcessor(send);
+        float[][] pixels = ip2.getFloatArray();
+        float[][] ip2mat = new float[ip2.getWidth()][ip2.getHeight()];
+        for (int i = 0; i < ip2.getWidth(); i++) {
+            for (int j = 0; j < ip2.getHeight(); j++) {
+                if (FOV.contains(i, j)) {
+                    // If spheres are cold put them hot, if they are hot keep them as hot
+                    ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
+                }
             }
         }
-
-        FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        imp2 = new ImagePlus("Spheres image", ip2);
-        imp2.setRoi(FOV);
+        FloatProcessor ipt = new FloatProcessor(ip2mat);
 
         // Finding all the peaks
         MaximumFinder mf = new MaximumFinder();
-        Polygon maxs = mf.getMaxima(ip2, unif, true);
+        Polygon maxs = mf.getMaxima(ipt, tolerance, true);
+        
+        // Final processing
         Overlay list = new Overlay();
         list.add(FOV);
         TextRoi.setFont(Font.SERIF, 5, Font.PLAIN, true);
         TextRoi.setGlobalJustification(TextRoi.CENTER);
-        //TextRoi.setColor(Color.red);
         for (int i = 0; i < maxs.npoints; i++) {
+            // The contrast is calculated with original matrix using the positions of the calculated maximas
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
-            // Exclude all peaks below 50% contrast
-            if (contrast > 50) {
-                PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
-                tpoint.setFillColor(Color.yellow);
-                list.add(tpoint, "Sphere " + (i + 1));
-                TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
-                text.setStrokeColor(Color.red);
-                list.add(text);
-                rt.incrementCounter();
-                rt.addValue("Sphere", i + 1);
-                rt.addValue("x", maxs.xpoints[i]);
-                rt.addValue("y", maxs.ypoints[i]);
-                rt.addValue("Contrast", contrast);
-            }
+            // Adding points in the position of the maximas
+            PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
+            tpoint.setFillColor(Color.yellow);
+            list.add(tpoint, "Sphere " + (i + 1));
+            TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
+            text.setStrokeColor(Color.orange);
+            list.add(text);
+            // Creating the results table
+            rt.incrementCounter();
+            rt.addValue("Sphere", i + 1);
+            rt.addValue("x", maxs.xpoints[i]);
+            rt.addValue("y", maxs.ypoints[i]);
+            rt.addValue("value", ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+            rt.addValue("mean", unif);
+            rt.addValue("Contrast", contrast);
         }
         list.drawNames(true);
-        ImagePlus imp1 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip1.duplicate());
-        imp1.setOverlay(list);
-        imp1.show();
+        ImagePlus imp2 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip2.duplicate());
+        imp2.setOverlay(list);
+        imp2.show();
 
         rt.showRowNumbers(false);
         rt.show("Tomographic Contrast " + imp.getTitle() + ": Frame " + send);

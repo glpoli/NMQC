@@ -20,7 +20,6 @@ import ij.gui.*;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.process.*;
-import ij.util.Tools;
 import static ij.util.Tools.*;
 import java.awt.*;
 import java.util.*;
