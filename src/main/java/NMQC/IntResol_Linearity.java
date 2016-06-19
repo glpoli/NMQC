@@ -24,7 +24,6 @@ import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
 import java.awt.Color;
 import java.util.*;
-import java.util.stream.*;
 import utils.*;
 
 /**

@@ -86,35 +86,38 @@ public class Tomographic_Contrast implements PlugInFilter {
             sinit = 1;
             send = 1;
         }
-        
+
         // Finding the mean 
         ImageProcessor ip1 = stack.getProcessor(sinit).duplicate();
-        ImagePlus imp2 = new ImagePlus("Uniformity image", ip1);
-        ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
+        ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
+        ImageStatistics is1 = imp1.getStatistics();
+        Roi FOV = Commons.getThreshold(imp1, 0.1 * is1.max, 0.9); // 10% of max value for threshold
         FOV.setStrokeColor(Color.blue);
-        imp2.setRoi(FOV);
-        is2 = imp2.getStatistics();
-        double unif = is2.mean;
+        imp1.setRoi(FOV);
+        is1 = imp1.getStatistics();
+        double unif = is1.mean;
+        double tolerance = is1.stdDev*2;
 
         // Building a temporary matrix to find the peaks
-        ip1 = stack.getProcessor(send);
-        float[][] pixels = ip1.getFloatArray();
-        float[][] ip2mat = new float[ip1.getWidth()][ip1.getHeight()];
-        for (int i = 0; i < ip1.getWidth(); i++) {
-            for (int j = 0; j < ip1.getHeight(); j++) {
-                // If spheres are cold put them hot, if they are hot keep them as hot
-                ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
+        ImageProcessor ip2 = stack.getProcessor(send);
+        float[][] pixels = ip2.getFloatArray();
+        float[][] ip2mat = new float[ip2.getWidth()][ip2.getHeight()];
+        for (int i = 0; i < ip2.getWidth(); i++) {
+            for (int j = 0; j < ip2.getHeight(); j++) {
+                if (FOV.contains(i, j)) {
+                    // If spheres are cold put them hot, if they are hot keep them as hot
+                    ip2mat[i][j] += coldsph ? unif - pixels[i][j] : pixels[i][j] - unif;
+                }
             }
         }
 
-        FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        imp2 = new ImagePlus("Spheres image", ip2);
-        imp2.setRoi(FOV);
+        FloatProcessor ipt = new FloatProcessor(ip2mat);
+        /*ImagePlus imp2 = new ImagePlus("Spheres image", ip2);
+        imp2.setRoi(FOV);*/
 
         // Finding all the peaks
         MaximumFinder mf = new MaximumFinder();
-        Polygon maxs = mf.getMaxima(ip2, unif, true);
+        Polygon maxs = mf.getMaxima(ipt, tolerance, true);
         Overlay list = new Overlay();
         list.add(FOV);
         TextRoi.setFont(Font.SERIF, 5, Font.PLAIN, true);
@@ -122,8 +125,9 @@ public class Tomographic_Contrast implements PlugInFilter {
         //TextRoi.setColor(Color.red);
         for (int i = 0; i < maxs.npoints; i++) {
             double contrast = MathUtils.Contrast(unif, ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+            IJ.log((new FPoint2D(maxs.xpoints[i], maxs.ypoints[i]).Print()) + " - Contrast: " + contrast);
             // Exclude all peaks below 50% contrast
-            if (contrast > 50) {
+            //if (contrast > 50) {
                 PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
                 tpoint.setFillColor(Color.yellow);
                 list.add(tpoint, "Sphere " + (i + 1));
@@ -134,13 +138,15 @@ public class Tomographic_Contrast implements PlugInFilter {
                 rt.addValue("Sphere", i + 1);
                 rt.addValue("x", maxs.xpoints[i]);
                 rt.addValue("y", maxs.ypoints[i]);
+                rt.addValue("value", ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+                rt.addValue("mean", unif);
                 rt.addValue("Contrast", contrast);
-            }
+            //}
         }
         list.drawNames(true);
-        ImagePlus imp1 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip1.duplicate());
-        imp1.setOverlay(list);
-        imp1.show();
+        ImagePlus imp2 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip2.duplicate());
+        imp2.setOverlay(list);
+        imp2.show();
 
         rt.showRowNumbers(false);
         rt.show("Tomographic Contrast " + imp.getTitle() + ": Frame " + send);
