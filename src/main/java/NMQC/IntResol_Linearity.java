@@ -130,21 +130,20 @@ public class IntResol_Linearity implements PlugInFilter {
     }
 
     /**
-     * This are the output values from Calculate
-     * contains the maximum resolution, the mean resolution,
-     * some data and the residuals.
+     * This are the output values from Calculate contains the maximum
+     * resolution, the mean resolution, some data and the residuals.
      *
      */
     public class myoutput {
 
-        double resol;
-        double meanresol;
+        FPoint2D resol;
+        FPoint2D meanresol;
         myReturnedObjects data;
         double[] residuals;
 
         public myoutput() {
-            this.resol = 0;
-            this.meanresol = 0;
+            this.resol = new FPoint2D(0, 0);
+            this.meanresol = new FPoint2D(0, 0);
             this.data = null;
             this.residuals = null;
         }
@@ -200,9 +199,11 @@ public class IntResol_Linearity implements PlugInFilter {
                 peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
                 med = med1;
                 x[i][j] = j;
-                double tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
-                result.resol = Math.max(result.resol, tresol);
-                result.meanresol += tresol;
+                FPoint2D tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
+                if (tresol.getX() > result.resol.getX()) {
+                    result.resol = tresol;
+                }
+                result.meanresol.add(tresol);
                 countpeaks += 1;
             }
             double[] arr = new double[result.data.counts[i].length - med];
@@ -213,12 +214,14 @@ public class IntResol_Linearity implements PlugInFilter {
             }
             peakpositions[i][npeaks - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
             x[i][npeaks - 1] = npeaks - 1;
-            double tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
-            result.resol = Math.max(result.resol, tresol);
-            result.meanresol += tresol;
+            FPoint2D tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
+            if (tresol.getX() > result.resol.getX()) {
+                result.resol = tresol;
+            }
+            result.meanresol.add(tresol);
             countpeaks += 1;
         }
-        result.meanresol /= countpeaks;
+        result.meanresol.divide(countpeaks);
         result.residuals = new double[npeaks * result.data.nbins];
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
@@ -258,13 +261,21 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("UFOV", r1.data.nbins);
         rt.addValue("CFOV", r2.data.nbins);
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic Resolution in " + r1.data.AxisRes + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(r1.resol, 4, 9));
-        rt.addValue("CFOV", IJ.d2s(r2.resol, 4, 9));
+        rt.addValue("Test", "Worst Intrinsic FWHM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.resol.getX(), 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.resol.getX(), 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic Resolution in " + r1.data.AxisRes + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(r1.meanresol, 4, 9));
-        rt.addValue("CFOV", IJ.d2s(r2.meanresol, 4, 9));
+        rt.addValue("Test", "Worst Intrinsic FWTM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.resol.getY(), 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.resol.getY(), 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test", "Mean Intrinsic FWHM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.meanresol.getX(), 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.meanresol.getX(), 4, 9));
+        rt.incrementCounter();
+        rt.addValue("Test", "Mean Intrinsic FWTM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue("UFOV", IJ.d2s(r1.meanresol.getY(), 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.meanresol.getY(), 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Absolute Linearity in " + r1.data.AxisLin + "(mm): ");
         rt.addValue("UFOV", IJ.d2s(a1[1], 4, 9));

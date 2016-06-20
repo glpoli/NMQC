@@ -20,6 +20,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
+import java.awt.Point;
 import utils.*;
 
 /**
@@ -164,8 +165,11 @@ public class SSR_PxSz implements PlugInFilter {
         double c = c2 - c1;
 
         result.PixelSize = realdistance / c;
+        
+        FPoint2D res1 = Fitter.resolution(x1, arr1, result.PixelSize, false);
+        FPoint2D res2 = Fitter.resolution(x2, arr2, result.PixelSize, false);
 
-        result.resolution.assign(Fitter.resolution(x1, arr1, result.PixelSize, false), Fitter.resolution(x2, arr2, result.PixelSize, false));
+        result.resolution.assign((res1.getX()+res2.getX())/2, (res1.getY()+res2.getY())/2);
 
         return result;
     }
@@ -192,14 +196,19 @@ public class SSR_PxSz implements PlugInFilter {
         rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(res.HeaderPixelSize, 4, 9));
         rt1.addValue("Difference(%)", IJ.d2s((res.PixelSize - res.HeaderPixelSize) * 100 / res.PixelSize, 4, 9));
         rt1.showRowNumbers(true);
-        rt1.show("Pixel size in " + Axis + ": " + imp.getTitle());
+        String Title1 = "Pixel size in " + Axis + ": " + imp.getTitle();
+        rt1.show(Title1);
+        Point loc1 = WindowManager.getWindow(Title1).getLocation();
+        int height1 = WindowManager.getWindow(Title1).getHeight();
 
         ResultsTable rt2 = new ResultsTable();
         rt2.incrementCounter();
-        rt2.addValue("Res1(mm)", res.resolution.getX());
-        rt2.addValue("Res2(mm)", res.resolution.getY());
+        rt2.addValue("FWHM(mm)", res.resolution.getX());
+        rt2.addValue("FWTM(mm)", res.resolution.getY());
         rt2.showRowNumbers(true);
-        rt2.show("Spatial resolution in " + Axis + ": " + imp.getTitle());
+        String Title2 = "Spatial resolution in " + Axis + ": " + imp.getTitle();
+        rt2.show(Title2);
+        WindowManager.getWindow(Title2).setLocation(loc1.x, loc1.y+height1);
     }
 
     void showAbout() {

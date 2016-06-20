@@ -77,6 +77,7 @@ public class Bar_Quadrant implements PlugInFilter {
 
         double lMTF = MathUtils.MTF(mean, stddev);
         double FWHM = wd * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lMTF));
+        double FWTM = wd * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lMTF));
 
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) {
@@ -85,6 +86,7 @@ public class Bar_Quadrant implements PlugInFilter {
         rt.incrementCounter();
         rt.addValue("MTF", IJ.d2s(lMTF, 5, 9));
         rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
+        rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
         rt.showRowNumbers(true);
         rt.show("Quadrant bar phantom: " + imp.getTitle());
     }

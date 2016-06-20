@@ -128,7 +128,7 @@ public class Tomographic_Contrast implements PlugInFilter {
             tpoint.setFillColor(Color.yellow);
             list.add(tpoint, "Sphere " + (i + 1));
             TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
-            text.setStrokeColor(Color.orange);
+            text.setStrokeColor(Color.red);
             list.add(text);
             // Creating the results table
             rt.incrementCounter();
