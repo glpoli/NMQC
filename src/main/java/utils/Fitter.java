@@ -72,7 +72,8 @@ public class Fitter {
         return cf.getResiduals();
     }
 
-    private static final double FAC = 2 * Math.sqrt(2 * Math.log(2));
+    private static final double FWHM = 2 * Math.sqrt(2 * Math.log(2));
+    private static final double FWTM = 2 * Math.sqrt(2 * Math.log(10));
 
     /**
      *
@@ -110,9 +111,9 @@ public class Fitter {
      * @param showplot boolean to show the plot
      * @return the resolution based on gaussian fit of the data
      */
-    public static double resolution(double[] xi, double[] yi, double pixwidth, boolean showplot) {
+    public static FPoint2D resolution(double[] xi, double[] yi, double pixwidth, boolean showplot) {
         double[] params = GaussianFit(xi, yi, showplot);
-        return params[3] * FAC * pixwidth;
+        return new FPoint2D(params[3] * FWHM * pixwidth, params[3] * FWTM * pixwidth);
     }
 
     /**
@@ -123,7 +124,7 @@ public class Fitter {
      * @param pixwidth pixel width
      * @return the resolution based on gaussian fit of the data
      */
-    public static double resolution(double[] xi, double[] yi, double pixwidth) {
+    public static FPoint2D resolution(double[] xi, double[] yi, double pixwidth) {
         return resolution(xi, yi, pixwidth, true);
     }
 
