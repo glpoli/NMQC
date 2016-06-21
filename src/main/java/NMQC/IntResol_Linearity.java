@@ -139,14 +139,14 @@ public class IntResol_Linearity implements PlugInFilter {
         FPoint2D resol;
         FPoint2D meanresol;
         myReturnedObjects data;
-        double stddevresidal;
+        double stddevresidual;
         double maxresidual;
 
         public myoutput() {
             this.resol = new FPoint2D(0, 0);
             this.meanresol = new FPoint2D(0, 0);
             this.data = null;
-            this.stddevresidal = 0;
+            this.stddevresidual = 0;
             this.maxresidual = 0;
         }
     }
@@ -241,7 +241,7 @@ public class IntResol_Linearity implements PlugInFilter {
             }
             
             result.maxresidual = Math.max(result.maxresidual, maxi);
-            result.stddevresidal = Math.max(result.stddevresidal, MathUtils.StdDev(newpos));
+            result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);
         return result;
@@ -284,10 +284,8 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("CFOV", IJ.d2s(r2.maxresidual, 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Differential Linearity in " + r1.data.AxisLin + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(r1.stddevresidal, 4, 9));
-        rt.addValue("CFOV", IJ.d2s(r2.stddevresidal, 4, 9));
-        //rt.addValue("UFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r1.residuals) / (r1.residuals.length * (r1.residuals.length - 1))), 4, 9));
-        //rt.addValue("CFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r2.residuals) / (r2.residuals.length * (r2.residuals.length - 1))), 4, 9));
+        rt.addValue("UFOV", IJ.d2s(r1.stddevresidual, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
     }
