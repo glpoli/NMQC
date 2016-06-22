@@ -15,6 +15,8 @@
  */
 package utils;
 
+import ij.util.ArrayUtil;
+
 /**
  *
  * @author alex
@@ -40,12 +42,30 @@ public class MathUtils {
      * @return the stddev of the array values
      */
     public static double StdDev(double[] array) {
-        double suma = 0;
-        double avg = averag(array);
-        for (int i = 0; i < array.length; i++) {
-            suma = suma + (array[i] - avg) * (array[i] - avg);
+        double var = Variance(array);
+        return var > 0 ? Math.sqrt(var) : 0.0;
+    }
+
+    /**
+     *
+     * @param array
+     * @return the stddev of the array values
+     */
+    public static double Variance(double[] array) {
+        int n = array.length;
+        if (n <= 1) {
+            return 0;
         }
-        return Math.sqrt(suma / (array.length * (array.length - 1)));
+
+        double total = 0;
+        double total2 = 0;
+
+        for (int i = 0; i < n; i++) {
+            total += array[i];
+            total2 += array[i] * array[i];
+        }
+
+        return (double) ((total2 - (total * total / n)) / (n - 1));
     }
 
     /**
@@ -56,7 +76,7 @@ public class MathUtils {
     public static double sqrsum(double[] array) {
         double suma = 0;
         for (int i = 0; i < array.length; i++) {
-            suma = suma + array[i] * array[i];
+            suma += array[i] * array[i];
         }
         return suma;
     }

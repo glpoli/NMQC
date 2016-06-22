@@ -139,13 +139,15 @@ public class IntResol_Linearity implements PlugInFilter {
         FPoint2D resol;
         FPoint2D meanresol;
         myReturnedObjects data;
-        double[] residuals;
+        double stddevresidual;
+        double maxresidual;
 
         public myoutput() {
             this.resol = new FPoint2D(0, 0);
             this.meanresol = new FPoint2D(0, 0);
             this.data = null;
-            this.residuals = null;
+            this.stddevresidual = 0;
+            this.maxresidual = 0;
         }
     }
 
@@ -222,22 +224,24 @@ public class IntResol_Linearity implements PlugInFilter {
             countpeaks += 1;
         }
         result.meanresol.divide(countpeaks);
-        result.residuals = new double[npeaks * result.data.nbins];
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
-            ArrayList<Double> lnewx = new ArrayList();
             ArrayList<Double> lnewpos = new ArrayList();
             for (int i = 0; i < result.data.nbins; i++) {
                 if (peakpositions[i][j] != 0) {
-                    lnewx.add((double) i);
                     lnewpos.add(peakpositions[i][j]);
                 }
             }
-            double[] newx = Commons.toPrimitive(lnewx.toArray(new Double[0]));
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
-            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
-            System.arraycopy(tresiduals, 0, result.residuals, 0, tresiduals.length);
+            double mean = MathUtils.averag(newpos);
+            double maxi = Math.abs(newpos[0]-mean);
+            for (int i =1; i<newpos.length;i++){
+                maxi = Math.max(maxi, Math.abs(newpos[i]-mean));
+            }
+            
+            result.maxresidual = Math.max(result.maxresidual, maxi);
+            result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);
         return result;
@@ -251,9 +255,7 @@ public class IntResol_Linearity implements PlugInFilter {
     public void run(ImageProcessor ip) {
         Overlay list = new Overlay();
         myoutput r1 = Calculate(list, 0.95);
-        double[] a1 = Tools.getMinMax(r1.residuals);
         myoutput r2 = Calculate(list, 0.75);
-        double[] a2 = Tools.getMinMax(r2.residuals);
         imp.setOverlay(list);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
@@ -278,12 +280,12 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("CFOV", IJ.d2s(r2.meanresol.getY(), 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Absolute Linearity in " + r1.data.AxisLin + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(a1[1], 4, 9));
-        rt.addValue("CFOV", IJ.d2s(a2[1], 4, 9));
+        rt.addValue("UFOV", IJ.d2s(r1.maxresidual, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.maxresidual, 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Differential Linearity in " + r1.data.AxisLin + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r1.residuals) / (r1.residuals.length * (r1.residuals.length - 1))), 4, 9));
-        rt.addValue("CFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r2.residuals) / (r2.residuals.length * (r2.residuals.length - 1))), 4, 9));
+        rt.addValue("UFOV", IJ.d2s(r1.stddevresidual, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
     }
