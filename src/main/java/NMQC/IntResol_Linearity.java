@@ -21,6 +21,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
+import ij.util.Tools;
 import java.awt.Color;
 import java.util.*;
 import utils.*;
@@ -34,6 +35,7 @@ public class IntResol_Linearity implements PlugInFilter {
     private ImagePlus imp;
     private String Method;
     final private int NemaSep = 30;//Nema Phantom line separation in mm
+    final private int HalfNemaSep = 15;
 
     /**
      *
@@ -171,11 +173,15 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         list.add(UFOV);
 
-        // getting the central array as reference for the number of peaks
+        /**
+         * Getting the central array as reference for the number of peaks, the
+         * peak positions and the peak height
+         */
         int npeaks = result.data.counts[(int) result.data.nbins / 2].length;
         double[] central = new double[npeaks];
         System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
         int[] lpeakpos = Fitter.findPeaks(central);
+        double maxreference = Tools.getMinMax(central)[1] * 0.5;
         npeaks = lpeakpos.length;
         double[][] peakpositions = new double[result.data.nbins][npeaks];
         double[][] x = new double[result.data.nbins][npeaks];
@@ -185,14 +191,14 @@ public class IntResol_Linearity implements PlugInFilter {
             IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
             // We avoid non rectangular zones if the option is true
-            // TODO: enhancement, try to include non rectangular zones
             if (avoidnonrectangular) {
                 if (peakpos.length != npeaks) {
                     continue;
                 }
             }
+            // Drop peaks that are at lower position than the first reference
             while (npeaks < peakpos.length) {
-                if (peakpos[0] - lpeakpos[0] < -15) {
+                if (peakpos[0] - lpeakpos[0] < -HalfNemaSep) {
                     peakpos = Arrays.copyOfRange(peakpos, 1, peakpos.length);
                 }
             }
@@ -209,13 +215,23 @@ public class IntResol_Linearity implements PlugInFilter {
                     x1[k] = k + med;
                 }
                 double ppos = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                // Check the right position for the peak in the array
                 int l = 0;
-                while (peakpos[0] - lpeakpos[l] > 15) {
+                while (peakpos[0] - lpeakpos[l] > HalfNemaSep) {
                     l += 1;
                 }
-                peakpositions[i][j + l] = ppos;
+                /**
+                 * Check if the peak is well conformed: 1. the peak is centered
+                 * in the array, borders are lower than 10% of maxima 2. the
+                 * peak has enough counts, the maxima is higher than 50% of
+                 * reference level
+                 */
+                double tlevel = Tools.getMinMax(arr1)[1];
+                boolean conformed = (arr1[0] < tlevel * 0.1) && (arr1[med1 - med - 1] < tlevel * 0.1) && (tlevel > maxreference);
+                // If conformed then add it to the matrix
+                peakpositions[i][j + l] = conformed ? ppos : 0;
                 med = med1;
-                x[i][j + l] = j + l;
+                x[i][j + l] = conformed ? j + l : 0;
                 FPoint2D tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
                 if (tresol.getX() > result.resol.getX()) {
                     result.resol = tresol;
@@ -223,19 +239,23 @@ public class IntResol_Linearity implements PlugInFilter {
                 result.meanresol.add(tresol);
                 countpeaks += 1;
             }
-            double[] arr = new double[result.data.counts[i].length - med];
-            double[] xf = new double[result.data.counts[i].length - med];
-            for (int k = 0; k < result.data.counts[i].length - med; k++) {
+            // repeat for last peak which is not included in previous cicle
+            int lastsize = result.data.counts[i].length - med;
+            double[] arr = new double[lastsize];
+            double[] xf = new double[lastsize];
+            for (int k = 0; k < lastsize; k++) {
                 arr[k] = result.data.counts[i][k + med];
                 xf[k] = k + med;
             }
             double ppos = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
             int l = 0;
-            while (peakpos[0] - lpeakpos[l] > 15) {
+            while (peakpos[0] - lpeakpos[l] > HalfNemaSep) {
                 l += 1;
             }
-            peakpositions[i][lnpeaks - 1 + l] = ppos;
-            x[i][lnpeaks - 1 + l] = lnpeaks - 1 + l;
+            double tlevel = Tools.getMinMax(arr)[1];
+            boolean conformed = (arr[0] < tlevel * 0.1) && (arr[lastsize - 1] < tlevel * 0.1) && (tlevel > maxreference);
+            peakpositions[i][lnpeaks - 1 + l] = conformed ? ppos : 0;
+            x[i][lnpeaks - 1 + l] = conformed ? lnpeaks - 1 + l : 0;
             FPoint2D tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
             if (tresol.getX() > result.resol.getX()) {
                 result.resol = tresol;
@@ -245,13 +265,7 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         result.meanresol.divide(countpeaks);
 
-        /*for (int i = 0; i < result.data.nbins; i++) {
-            String s = "";
-            for (int j = 0; j < npeaks; j++) {
-                s += peakpositions[i][j] + ", ";
-            }
-            IJ.log(s);
-        }*/
+        /**/
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);

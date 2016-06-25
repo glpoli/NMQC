@@ -41,12 +41,12 @@ public class ConvexHull {
 
     private FPoint2D getPointWithLowestYCoord() {
         FPoint2D lowest_point = points[0];
-        for (int i = 1; i < n; i++) {
-            if (points[i].getY() < lowest_point.getY()) {
-                lowest_point = points[i];
-            } else if (points[i].getY() < lowest_point.getY()) {
-                if (points[i].getX() > lowest_point.getX()) {
-                    lowest_point = points[i];
+        for (FPoint2D p : points) {
+            if (p.getY() < lowest_point.getY()) {
+                lowest_point = p;
+            } else if (p.getY() < lowest_point.getY()) {
+                if (p.getX() > lowest_point.getX()) {
+                    lowest_point = p;
                 }
             }
         }
@@ -58,8 +58,8 @@ public class ConvexHull {
             return n;
         }
         FPoint2D point_with_lowest_y_coord = getPointWithLowestYCoord();
-        for (int i = 0; i < n; i++) {
-            points[i].setComparatorPoint(point_with_lowest_y_coord);
+        for (FPoint2D p : points) {
+            p.setComparatorPoint(point_with_lowest_y_coord);
         }
         Arrays.sort(points);
         FPoint2D[] mod_points = new FPoint2D[n + 1];
