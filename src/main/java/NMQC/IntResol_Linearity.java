@@ -17,7 +17,6 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
-import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
@@ -155,9 +154,11 @@ public class IntResol_Linearity implements PlugInFilter {
      *
      * @param list the overlay on which we add the calculated ROIs
      * @param cutoff the cuttoff to calculate the ROIs
+     * @param avoidnonrectangular tell me if you want to aboid non rectangular
+     * shape effects
      * @return several values
      */
-    public myoutput Calculate(Overlay list, double cutoff) {
+    public myoutput Calculate(Overlay list, double cutoff, boolean avoidnonrectangular) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Commons.getThreshold(imp, 0.1 * is.max, cutoff);
@@ -183,14 +184,23 @@ public class IntResol_Linearity implements PlugInFilter {
         for (int i = 0; i < result.data.nbins; i++) {
             IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
-            // We avoid non rectangular zones
+            // We avoid non rectangular zones if the option is true
             // TODO: enhancement, try to include non rectangular zones
-            if (peakpos.length != npeaks) {
-                continue;
+            if (avoidnonrectangular) {
+                if (peakpos.length != npeaks) {
+                    continue;
+                }
             }
+            while (npeaks < peakpos.length) {
+                if (peakpos[0] - lpeakpos[0] < -15) {
+                    peakpos = Arrays.copyOfRange(peakpos, 1, peakpos.length);
+                }
+            }
+
+            int lnpeaks = peakpos.length;
             // We split the array by finding the middle between two consecutive points 
             int med = 0;
-            for (int j = 0; j < npeaks - 1; j++) {
+            for (int j = 0; j < lnpeaks - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
                 double[] arr1 = new double[med1 - med];
                 double[] x1 = new double[med1 - med];
@@ -198,9 +208,14 @@ public class IntResol_Linearity implements PlugInFilter {
                     arr1[k] = result.data.counts[i][k + med];
                     x1[k] = k + med;
                 }
-                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                double ppos = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                int l = 0;
+                while (peakpos[0] - lpeakpos[l] > 15) {
+                    l += 1;
+                }
+                peakpositions[i][j + l] = ppos;
                 med = med1;
-                x[i][j] = j;
+                x[i][j + l] = j + l;
                 FPoint2D tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
                 if (tresol.getX() > result.resol.getX()) {
                     result.resol = tresol;
@@ -214,8 +229,13 @@ public class IntResol_Linearity implements PlugInFilter {
                 arr[k] = result.data.counts[i][k + med];
                 xf[k] = k + med;
             }
-            peakpositions[i][npeaks - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
-            x[i][npeaks - 1] = npeaks - 1;
+            double ppos = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
+            int l = 0;
+            while (peakpos[0] - lpeakpos[l] > 15) {
+                l += 1;
+            }
+            peakpositions[i][lnpeaks - 1 + l] = ppos;
+            x[i][lnpeaks - 1 + l] = lnpeaks - 1 + l;
             FPoint2D tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
             if (tresol.getX() > result.resol.getX()) {
                 result.resol = tresol;
@@ -224,6 +244,14 @@ public class IntResol_Linearity implements PlugInFilter {
             countpeaks += 1;
         }
         result.meanresol.divide(countpeaks);
+
+        /*for (int i = 0; i < result.data.nbins; i++) {
+            String s = "";
+            for (int j = 0; j < npeaks; j++) {
+                s += peakpositions[i][j] + ", ";
+            }
+            IJ.log(s);
+        }*/
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
@@ -235,11 +263,11 @@ public class IntResol_Linearity implements PlugInFilter {
             }
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
             double mean = MathUtils.averag(newpos);
-            double maxi = Math.abs(newpos[0]-mean);
-            for (int i =1; i<newpos.length;i++){
-                maxi = Math.max(maxi, Math.abs(newpos[i]-mean));
+            double maxi = Math.abs(newpos[0] - mean);
+            for (int i = 1; i < newpos.length; i++) {
+                maxi = Math.max(maxi, Math.abs(newpos[i] - mean));
             }
-            
+
             result.maxresidual = Math.max(result.maxresidual, maxi);
             result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
@@ -254,8 +282,10 @@ public class IntResol_Linearity implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
         Overlay list = new Overlay();
-        myoutput r1 = Calculate(list, 0.95);
-        myoutput r2 = Calculate(list, 0.75);
+        boolean avoidrect = Method.contains("exclude");
+        String forTitle = avoidrect ? " rectangular" : " shaped";
+        myoutput r1 = Calculate(list, 0.95, avoidrect);
+        myoutput r2 = Calculate(list, 0.75, avoidrect);
         imp.setOverlay(list);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
@@ -287,7 +317,7 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("UFOV", IJ.d2s(r1.stddevresidual, 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
-        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
+        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle() + forTitle);
     }
 
     void showAbout() {
