@@ -15,7 +15,7 @@
  */
 package utils;
 
-import ij.util.ArrayUtil;
+import ij.*;
 
 /**
  *
@@ -30,8 +30,8 @@ public class MathUtils {
      */
     public static double averag(double[] array) {
         double suma = 0;
-        for (int i = 0; i < array.length; i++) {
-            suma = suma + array[i];
+        for (double m : array) {
+            suma += m;
         }
         return suma / array.length;
     }
@@ -60,9 +60,9 @@ public class MathUtils {
         double total = 0;
         double total2 = 0;
 
-        for (int i = 0; i < n; i++) {
-            total += array[i];
-            total2 += array[i] * array[i];
+        for (double m : array) {
+            total += m;
+            total2 += m * m;
         }
 
         return (double) ((total2 - (total * total / n)) / (n - 1));
@@ -75,8 +75,8 @@ public class MathUtils {
      */
     public static double sqrsum(double[] array) {
         double suma = 0;
-        for (int i = 0; i < array.length; i++) {
-            suma += array[i] * array[i];
+        for (double m : array) {
+            suma += m * m;
         }
         return suma;
     }
@@ -100,6 +100,16 @@ public class MathUtils {
      */
     public static double Contrast(double min, double max) {
         return Math.abs(max - min) * 100 / (min + max);
+    }
+    
+    public static void PrintMatrix(double[][] mat){
+        for (double[] mat1 : mat) {
+            String s = "";
+            for (double m : mat1) {
+                s += m + ", ";
+            }
+            IJ.log(s);
+        }
     }
 
 }

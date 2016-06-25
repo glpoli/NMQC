@@ -17,11 +17,11 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
-import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
+import ij.util.Tools;
 import java.awt.Color;
 import java.util.*;
 import utils.*;
@@ -35,6 +35,7 @@ public class IntResol_Linearity implements PlugInFilter {
     private ImagePlus imp;
     private String Method;
     final private int NemaSep = 30;//Nema Phantom line separation in mm
+    final private int HalfNemaSep = 15;
 
     /**
      *
@@ -139,14 +140,14 @@ public class IntResol_Linearity implements PlugInFilter {
         FPoint2D resol;
         FPoint2D meanresol;
         myReturnedObjects data;
-        double stddevresidal;
+        double stddevresidual;
         double maxresidual;
 
         public myoutput() {
             this.resol = new FPoint2D(0, 0);
             this.meanresol = new FPoint2D(0, 0);
             this.data = null;
-            this.stddevresidal = 0;
+            this.stddevresidual = 0;
             this.maxresidual = 0;
         }
     }
@@ -155,9 +156,11 @@ public class IntResol_Linearity implements PlugInFilter {
      *
      * @param list the overlay on which we add the calculated ROIs
      * @param cutoff the cuttoff to calculate the ROIs
+     * @param avoidnonrectangular tell me if you want to aboid non rectangular
+     * shape effects
      * @return several values
      */
-    public myoutput Calculate(Overlay list, double cutoff) {
+    public myoutput Calculate(Overlay list, double cutoff, boolean avoidnonrectangular) {
         ImageStatistics is = imp.getStatistics();
         myoutput result = new myoutput();
         Roi UFOV = Commons.getThreshold(imp, 0.1 * is.max, cutoff);
@@ -170,11 +173,15 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         list.add(UFOV);
 
-        // getting the central array as reference for the number of peaks
+        /**
+         * Getting the central array as reference for the number of peaks, the
+         * peak positions and the peak height
+         */
         int npeaks = result.data.counts[(int) result.data.nbins / 2].length;
         double[] central = new double[npeaks];
         System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
         int[] lpeakpos = Fitter.findPeaks(central);
+        double maxreference = Tools.getMinMax(central)[1] * 0.5;
         npeaks = lpeakpos.length;
         double[][] peakpositions = new double[result.data.nbins][npeaks];
         double[][] x = new double[result.data.nbins][npeaks];
@@ -183,14 +190,23 @@ public class IntResol_Linearity implements PlugInFilter {
         for (int i = 0; i < result.data.nbins; i++) {
             IJ.showProgress(i / result.data.nbins / 2);
             int[] peakpos = Fitter.findPeaks(result.data.counts[i]);
-            // We avoid non rectangular zones
-            // TODO: enhancement, try to include non rectangular zones
-            if (peakpos.length != npeaks) {
-                continue;
+            // We avoid non rectangular zones if the option is true
+            if (avoidnonrectangular) {
+                if (peakpos.length != npeaks) {
+                    continue;
+                }
             }
+            // Drop peaks that are at lower position than the first reference
+            while (npeaks < peakpos.length) {
+                if (peakpos[0] - lpeakpos[0] < -HalfNemaSep) {
+                    peakpos = Arrays.copyOfRange(peakpos, 1, peakpos.length);
+                }
+            }
+
+            int lnpeaks = peakpos.length;
             // We split the array by finding the middle between two consecutive points 
             int med = 0;
-            for (int j = 0; j < npeaks - 1; j++) {
+            for (int j = 0; j < lnpeaks - 1; j++) {
                 int med1 = (int) (0.5 * (peakpos[j] + peakpos[j + 1]));
                 double[] arr1 = new double[med1 - med];
                 double[] x1 = new double[med1 - med];
@@ -198,9 +214,24 @@ public class IntResol_Linearity implements PlugInFilter {
                     arr1[k] = result.data.counts[i][k + med];
                     x1[k] = k + med;
                 }
-                peakpositions[i][j] = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                double ppos = Fitter.peakpos(x1, arr1, false) * result.data.pixelsize;
+                // Check the right position for the peak in the array
+                int l = 0;
+                while (peakpos[0] - lpeakpos[l] > HalfNemaSep) {
+                    l += 1;
+                }
+                /**
+                 * Check if the peak is well conformed: 1. the peak is centered
+                 * in the array, borders are lower than 10% of maxima 2. the
+                 * peak has enough counts, the maxima is higher than 50% of
+                 * reference level
+                 */
+                double tlevel = Tools.getMinMax(arr1)[1];
+                boolean conformed = (arr1[0] < tlevel * 0.1) && (arr1[med1 - med - 1] < tlevel * 0.1) && (tlevel > maxreference);
+                // If conformed then add it to the matrix
+                peakpositions[i][j + l] = conformed ? ppos : 0;
                 med = med1;
-                x[i][j] = j;
+                x[i][j + l] = conformed ? j + l : 0;
                 FPoint2D tresol = Fitter.resolution(x1, arr1, result.data.pixelsize, false);
                 if (tresol.getX() > result.resol.getX()) {
                     result.resol = tresol;
@@ -208,14 +239,23 @@ public class IntResol_Linearity implements PlugInFilter {
                 result.meanresol.add(tresol);
                 countpeaks += 1;
             }
-            double[] arr = new double[result.data.counts[i].length - med];
-            double[] xf = new double[result.data.counts[i].length - med];
-            for (int k = 0; k < result.data.counts[i].length - med; k++) {
+            // repeat for last peak which is not included in previous cicle
+            int lastsize = result.data.counts[i].length - med;
+            double[] arr = new double[lastsize];
+            double[] xf = new double[lastsize];
+            for (int k = 0; k < lastsize; k++) {
                 arr[k] = result.data.counts[i][k + med];
                 xf[k] = k + med;
             }
-            peakpositions[i][npeaks - 1] = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
-            x[i][npeaks - 1] = npeaks - 1;
+            double ppos = Fitter.peakpos(xf, arr, false) * result.data.pixelsize;
+            int l = 0;
+            while (peakpos[0] - lpeakpos[l] > HalfNemaSep) {
+                l += 1;
+            }
+            double tlevel = Tools.getMinMax(arr)[1];
+            boolean conformed = (arr[0] < tlevel * 0.1) && (arr[lastsize - 1] < tlevel * 0.1) && (tlevel > maxreference);
+            peakpositions[i][lnpeaks - 1 + l] = conformed ? ppos : 0;
+            x[i][lnpeaks - 1 + l] = conformed ? lnpeaks - 1 + l : 0;
             FPoint2D tresol = Fitter.resolution(xf, arr, result.data.pixelsize, false);
             if (tresol.getX() > result.resol.getX()) {
                 result.resol = tresol;
@@ -224,6 +264,8 @@ public class IntResol_Linearity implements PlugInFilter {
             countpeaks += 1;
         }
         result.meanresol.divide(countpeaks);
+
+        /**/
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
@@ -235,13 +277,13 @@ public class IntResol_Linearity implements PlugInFilter {
             }
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
             double mean = MathUtils.averag(newpos);
-            double maxi = Math.abs(newpos[0]-mean);
-            for (int i =1; i<newpos.length;i++){
-                maxi = Math.max(maxi, Math.abs(newpos[i]-mean));
+            double maxi = Math.abs(newpos[0] - mean);
+            for (int i = 1; i < newpos.length; i++) {
+                maxi = Math.max(maxi, Math.abs(newpos[i] - mean));
             }
-            
+
             result.maxresidual = Math.max(result.maxresidual, maxi);
-            result.stddevresidal = Math.max(result.stddevresidal, MathUtils.StdDev(newpos));
+            result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);
         return result;
@@ -254,8 +296,10 @@ public class IntResol_Linearity implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
         Overlay list = new Overlay();
-        myoutput r1 = Calculate(list, 0.95);
-        myoutput r2 = Calculate(list, 0.75);
+        boolean avoidrect = Method.contains("exclude");
+        String forTitle = avoidrect ? " rectangular" : " shaped";
+        myoutput r1 = Calculate(list, 0.95, avoidrect);
+        myoutput r2 = Calculate(list, 0.75, avoidrect);
         imp.setOverlay(list);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
@@ -284,12 +328,10 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("CFOV", IJ.d2s(r2.maxresidual, 4, 9));
         rt.incrementCounter();
         rt.addValue("Test", "Differential Linearity in " + r1.data.AxisLin + "(mm): ");
-        rt.addValue("UFOV", IJ.d2s(r1.stddevresidal, 4, 9));
-        rt.addValue("CFOV", IJ.d2s(r2.stddevresidal, 4, 9));
-        //rt.addValue("UFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r1.residuals) / (r1.residuals.length * (r1.residuals.length - 1))), 4, 9));
-        //rt.addValue("CFOV", IJ.d2s(Math.sqrt(MathUtils.sqrsum(r2.residuals) / (r2.residuals.length * (r2.residuals.length - 1))), 4, 9));
+        rt.addValue("UFOV", IJ.d2s(r1.stddevresidual, 4, 9));
+        rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
-        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle());
+        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle() + forTitle);
     }
 
     void showAbout() {

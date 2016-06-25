@@ -25,7 +25,7 @@
   7. Tomographic Contrast
     - Image must be a 3D reconstruction from an Jasczak Phantom acquisition
 	- User shall provide a number referring a uniformity region frame and another for the desired frame for contrast calculation
-	- Automatically detects phantom border and returns the positions of every sphere with more than 50% contrast (even artifacts!), user shall discriminate which detection is correct
+	- Automatically detects phantom border and returns the positions of every sphere (even artifacts!), user shall discriminate which detection is correct
 	
 ### Work in Progress
 
