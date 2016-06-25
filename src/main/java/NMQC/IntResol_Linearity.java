@@ -86,7 +86,7 @@ public class IntResol_Linearity implements PlugInFilter {
             result.pixelsize = vh;
             result.AxisLin = "X";
             result.AxisRes = "Y";
-            result.nbins = (int) Math.floor(lroi.getFloatWidth() * vw / NemaSep);
+            result.nbins = (int) Math.round(lroi.getFloatWidth() * vw / NemaSep);
 
             result.counts = new double[result.nbins][(int) lroi.getFloatHeight()];
             double dpos = lroi.getFloatWidth() / (result.nbins - 1);
@@ -94,7 +94,7 @@ public class IntResol_Linearity implements PlugInFilter {
             for (int j = 0; j < lroi.getFloatHeight(); j++) {
                 for (int i = 0; i < result.nbins; i++) {
                     for (int k = 0; k < dpos; k++) {
-                        int xi = i * k + (int) lroi.getXBase();
+                        int xi = (int) Math.round(i * dpos + k + lroi.getXBase());
                         int yi = j + (int) lroi.getYBase();
                         if (lroi.contains(xi, yi)) {
                             result.counts[i][j] += pixels[xi][yi];
@@ -118,7 +118,7 @@ public class IntResol_Linearity implements PlugInFilter {
                 for (int j = 0; j < result.nbins; j++) {
                     for (int k = 0; k < dpos; k++) {
                         int xi = i + (int) lroi.getXBase();
-                        int yi = j * k + (int) lroi.getYBase();
+                        int yi = (int) Math.round(j * dpos + k + lroi.getYBase());
                         if (lroi.contains(xi, yi)) {
                             result.counts[j][i] += pixels[xi][yi];
                         }
@@ -181,7 +181,7 @@ public class IntResol_Linearity implements PlugInFilter {
         double[] central = new double[npeaks];
         System.arraycopy(result.data.counts[(int) result.data.nbins / 2], 0, central, 0, npeaks);
         int[] lpeakpos = Fitter.findPeaks(central);
-        double maxreference = Tools.getMinMax(central)[1] * 0.5;
+        double maxreference = MathUtils.averag(central) - 2 * MathUtils.StdDev(central);
         npeaks = lpeakpos.length;
         double[][] peakpositions = new double[result.data.nbins][npeaks];
         double[][] x = new double[result.data.nbins][npeaks];
@@ -265,7 +265,7 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         result.meanresol.divide(countpeaks);
 
-        /**/
+        MathUtils.PrintMatrix(peakpositions);
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
