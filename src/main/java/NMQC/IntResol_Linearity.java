@@ -265,7 +265,7 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         result.meanresol.divide(countpeaks);
 
-        MathUtils.PrintMatrix(peakpositions);
+        //MathUtils.PrintMatrix(peakpositions);
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
