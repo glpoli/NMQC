@@ -79,10 +79,15 @@ public class Four_Bar_Phantom implements PlugInFilter {
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Test", "Spatial Resolution");
-        rt.addValue("X (mm)", resX);
-        rt.addValue("Y (mm)", resY);
-        rt.addValue("Difference (%)", (1 - resX / resY) * 100);
+        rt.addValue("Test", "FWHM");
+        rt.addValue("X (mm)", resv.resolution.getX());
+        rt.addValue("Y (mm)", resh.resolution.getX());
+        rt.addValue("Difference (%)", (1 - resv.resolution.getX() / resh.resolution.getX()) * 100);
+        rt.incrementCounter();
+        rt.addValue("Test", "FWTM");
+        rt.addValue("X (mm)", resv.resolution.getY());
+        rt.addValue("Y (mm)", resh.resolution.getY());
+        rt.addValue("Difference (%)", (1 - resv.resolution.getY() / resh.resolution.getY()) * 100);
         rt.incrementCounter();
         rt.addValue("Test", "Pixel Size");
         rt.addValue("X (mm)", resv.PixelSize);
