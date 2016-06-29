@@ -100,6 +100,7 @@ public class Planar_Uniformity implements PlugInFilter {
         Convolver cv = new Convolver();
         cv.setNormalize(true);
         cv.convolve(ip2, kernel, 3, 3);
+        ip2.setMinAndMax(is.min, is.max);
         imp2.updateAndDraw();
         ImageStatistics is0 = ip2.getStatistics();
 

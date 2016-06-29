@@ -74,9 +74,6 @@ public class Four_Bar_Phantom implements PlugInFilter {
         SSR_PxSz.outputvalues resv = SSR_PxSz.Calculate(imp, roi, "Vertical", d);
         SSR_PxSz.outputvalues resh = SSR_PxSz.Calculate(imp, roi, "Horizontal", d);
 
-        double resX = (resv.resolution.getX() + resv.resolution.getY()) / 2;
-        double resY = (resh.resolution.getX() + resh.resolution.getY()) / 2;
-
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
         rt.addValue("Test", "FWHM");

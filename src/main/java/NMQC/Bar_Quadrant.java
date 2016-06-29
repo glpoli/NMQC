@@ -20,6 +20,9 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.*;
 import utils.*;
 
 /**
@@ -29,7 +32,8 @@ import utils.*;
 public class Bar_Quadrant implements PlugInFilter {
 
     private ImagePlus imp;
-    private Roi roi;
+    //private Roi roi;
+    private final double[] barwidth = {2.12, 2.54, 3.18, 4.23};
 
     /**
      *
@@ -47,13 +51,74 @@ public class Bar_Quadrant implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-        roi = imp.getRoi();
+        /*roi = imp.getRoi();
         if (roi == null) {
             IJ.error("Selection required");
             return DONE;
-        }
+        }*/
         this.imp = imp;
         return DOES_ALL;
+    }
+
+    private Roi getQuadrant(Roi FOV, int quadrant) {
+        double[] middle = FOV.getContourCentroid();
+        FloatPolygon fp;
+        FloatPolygon poly = new FloatPolygon();
+        if (IJ.getVersion().contains("1.51")) {
+            fp = FOV.getContainedFloatPoints();
+        } else {
+            fp = Commons.getContainedFloatPoints(FOV);
+        }
+
+        for (int i = 0; i < fp.npoints; i++) {
+            double angle = Commons.getFloatAngle(middle[0], middle[1], fp.xpoints[i], fp.ypoints[i]);
+            if ((angle >= (quadrant - 1) * 90) && (angle <= quadrant * 90)) {
+                poly.addPoint(fp.xpoints[i], fp.ypoints[i]);
+            }
+        }
+
+        PolygonRoi result = new PolygonRoi(poly, Roi.POLYGON);
+        return new PolygonRoi(result.getConvexHull(), Roi.POLYGON);
+    }
+
+    private Roi DetectBars(ImagePlus imp1, Roi FOV, float mean, int quadrant) {
+        ImageProcessor ip1 = imp1.getProcessor();
+        float[][] Pixels = ip1.getFloatArray();
+        float[][] tarray = new float[ip1.getWidth()][ip1.getHeight()];
+        double max = 0;
+        for (int i = 0; i < ip1.getWidth(); i++) {
+            for (int j = 0; j < ip1.getHeight(); j++) {
+                if (FOV.contains(i, j)) {
+                    tarray[i][j] = mean - Pixels[i][j];
+                    if (tarray[i][j] < 0) {
+                        tarray[i][j] = 0;
+                    }
+                    if (tarray[i][j] > max) {
+                        max = tarray[i][j];
+                    }
+                }
+            }
+        }
+        ImageProcessor ip2 = new FloatProcessor(tarray);
+        ImagePlus imp2 = new ImagePlus("temporal " + quadrant, ip2);
+        Roi result = Commons.getThreshold(imp2, max * 0.5, 1);
+        //imp2.setRoi(result);
+        //imp2.show();
+        return result;
+    }
+
+    private double[] getBarWidth(double[] lmtf) {
+        SortedMap<Double, Double> map = new TreeMap<>();
+        for (int i = 0; i < 4; i++) {
+            map.put(lmtf[i], barwidth[i]);
+        }
+        double[] result = new double[4];
+        int i=0;
+        for (Map.Entry<Double, Double> entry : map.entrySet()) {
+            result[i]=entry.getValue();
+            i++;
+        }
+        return result;
     }
 
     /**
@@ -63,31 +128,51 @@ public class Bar_Quadrant implements PlugInFilter {
     @Override
     public void run(ImageProcessor ip) {
 
-        GenericDialog gd = new GenericDialog("Bar Quadrant Phantom");
-        gd.addNumericField("Enter bar width (mm):", 10, 2);
-        gd.showDialog();
-        if (gd.wasCanceled()) {
-            return;
+        ImagePlus imp2 = imp.duplicate();
+        imp2.deleteRoi();
+        Roi FOV = Commons.getThreshold(imp2, imp2.getStatistics().max * 0.1, 0.95);
+        imp2.setRoi(FOV);
+        double mean = imp2.getStatistics().mean;
+        imp2.deleteRoi();
+
+        ResultsTable rt = new ResultsTable();
+        Overlay list = new Overlay();
+        Roi[] lFOV = new Roi[4];
+        double[] lmtf = new double[4];
+        TextRoi.setFont(Font.SERIF, 12, Font.PLAIN, true);
+        TextRoi.setGlobalJustification(TextRoi.CENTER);
+        TextRoi.setColor(Color.yellow);
+        for (int i = 0; i < 4; i++) {
+            lFOV[i] = getQuadrant(FOV, i + 1);
+            lFOV[i] = DetectBars(imp2, lFOV[i], (float) mean, i);
+            lFOV[i].setStrokeColor(Color.yellow);
+            list.add(lFOV[i]);
+            imp2.setRoi(lFOV[i]);
+            ImageStatistics is2 = imp2.getStatistics();
+            double lmean = is2.mean;
+            double lstddev = is2.stdDev;
+            imp2.deleteRoi();
+            lmtf[i] = MathUtils.MTF(lmean, lstddev);
         }
-        double wd = gd.getNextNumber();
-
-        ImageStatistics is0 = imp.getStatistics();
-        double mean = is0.mean;
-        double stddev = is0.stdDev;
-
-        double lMTF = MathUtils.MTF(mean, stddev);
-        double FWHM = wd * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lMTF));
-        double FWTM = wd * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lMTF));
-
-        ResultsTable rt = ResultsTable.getResultsTable();
-        if (rt == null) {
-            rt = new ResultsTable();
+        double[] bw = getBarWidth(lmtf);
+        for (int i = 0; i < 4; i++) {
+            double FWHM = bw[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
+            double FWTM = bw[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
+            rt.incrementCounter();
+            rt.addValue("Quadrant", "" + (i + 1));
+            rt.addValue("Barwidth (mm)", "" + bw[i]);
+            rt.addValue("MTF", IJ.d2s(lmtf[i], 5, 9));
+            rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
+            rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
+            double[] center = lFOV[i].getContourCentroid();
+            TextRoi tr = new TextRoi(center[0], center[1], "" + (i + 1));
+            list.add(tr);
         }
-        rt.incrementCounter();
-        rt.addValue("MTF", IJ.d2s(lMTF, 5, 9));
-        rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
-        rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
-        rt.showRowNumbers(true);
+
+        imp2.setOverlay(list);
+        imp2.show();
+
+        rt.showRowNumbers(false);
         rt.show("Quadrant bar phantom: " + imp.getTitle());
     }
 
