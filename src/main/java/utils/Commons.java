@@ -22,7 +22,6 @@ import ij.plugin.filter.*;
 import ij.process.*;
 import static ij.util.Tools.*;
 import java.awt.*;
-import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -40,6 +39,32 @@ public class Commons {
      */
     public static double[] toPrimitive(Double[] array) {
         return Stream.of(array).mapToDouble(Double::doubleValue).toArray();
+    }
+
+    /**
+     *
+     * @param array the float array
+     * @return a double array
+     */
+    public static double[] todouble(float[] array) {
+        double[] result = new double[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = (double) array[i];
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param array the float array
+     * @return a double array
+     */
+    public static float[] tofloat(double[] array) {
+        float[] result = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = (float) array[i];
+        }
+        return result;
     }
 
     /**
@@ -85,36 +110,35 @@ public class Commons {
     }
 
     /**
-     * Returns the coordinates of the pixels inside this ROI as an array of
-     * Points.
+     * Returns the coordinates of the pixels inside this ROI as a Float Polygon.
      *
      * @param roi
-     * @return an array with all the points included in the roi
+     * @return a float Polygon with all the points included in the roi
      * @see #getContainedFloatPoints()
      * @see #Iterator()
      * @Deprecated it is already included in imagej 1.51a
      */
     @Deprecated
-    public static FPoint2D[] getContainedPoints(Roi roi) {
+    public static FloatPolygon getContainedFloatPoints(Roi roi) {
+        Roi roi2 = roi;
         if (roi.isLine()) {
-            FloatPolygon p = roi.getInterpolatedPolygon();
-            FPoint2D[] points = new FPoint2D[p.npoints];
-            for (int i = 0; i < p.npoints; i++) {
-                points[i] = new FPoint2D((int) Math.round(p.xpoints[i]), (int) Math.round(p.ypoints[i]));
+            if (roi.getStrokeWidth() <= 1) {
+                return roi2.getInterpolatedPolygon();
+            } else {
+                roi2 = Selection.lineToArea(roi);
             }
-            return points;
         }
-        ImageProcessor mask = roi.getMask();
-        Rectangle bounds = roi.getBounds();
-        ArrayList points = new ArrayList();
+        ImageProcessor mask = roi2.getMask();
+        Rectangle bounds = roi2.getBounds();
+        FloatPolygon points = new FloatPolygon();
         for (int y = 0; y < bounds.height; y++) {
             for (int x = 0; x < bounds.width; x++) {
                 if (mask == null || mask.getPixel(x, y) != 0) {
-                    points.add(new FPoint2D((int) roi.getXBase() + x, (int) roi.getYBase() + y));
+                    points.addPoint((float) (bounds.x + x), (float) (bounds.y + y));
                 }
             }
         }
-        return (FPoint2D[]) points.toArray(new FPoint2D[points.size()]);
+        return points;
     }
 
     /**
@@ -137,8 +161,7 @@ public class Commons {
         if (IJ.getVersion().contains("1.51")) {
             CHroi = new PolygonRoi(roi.getContainedFloatPoints(), Roi.POLYGON);
         } else {
-            FPoint2D[] points = getContainedPoints(roi);
-            CHroi = new PolygonRoi(FPoint2D.getXPoints(points), FPoint2D.getYPoints(points), Roi.POLYGON);
+            CHroi = new PolygonRoi(getContainedFloatPoints(roi), Roi.POLYGON);
         }
 
         CHroi = new PolygonRoi(CHroi.getConvexHull(), Roi.POLYGON);
@@ -154,7 +177,8 @@ public class Commons {
     /**
      *
      * @param imp The image object
-     * @param p the point on which we calculate the boundary, this point is always inside final roi
+     * @param p the point on which we calculate the boundary, this point is
+     * always inside final roi
      * @param level the level to get isocontour
      * @return the isocontour roi at specified level containing the input point
      */
@@ -178,7 +202,8 @@ public class Commons {
     /**
      *
      * @param imp The image object
-     * @param p the points on which we calculate the boundaries, these points are always inside final rois
+     * @param p the points on which we calculate the boundaries, these points
+     * are always inside final rois
      * @param level the level to get isocontour
      * @return the isocontour roi at specified level containing all input points
      */
@@ -210,6 +235,17 @@ public class Commons {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the angle in degrees between the specified line and a horizontal
+     * line. in [0 - 360] interval
+     */
+    public static double getFloatAngle(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y1 - y2;
+        double angle = (180.0 / Math.PI) * Math.atan2(dy, dx);
+        return angle < 0 ? 360 + angle : angle;
     }
 
 }

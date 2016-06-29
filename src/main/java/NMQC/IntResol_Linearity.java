@@ -255,24 +255,29 @@ public class IntResol_Linearity implements PlugInFilter {
         }
         result.meanresol.divide(countpeaks);
 
-        MathUtils.PrintMatrix(peakpositions);
+        //MathUtils.PrintMatrix(peakpositions);
         // Final step to get residuals in linear fit for Linearity
         for (int j = 0; j < npeaks; j++) {
             IJ.showProgress(0.5 + j / npeaks / 2);
+            ArrayList<Double> lnewx = new ArrayList();
             ArrayList<Double> lnewpos = new ArrayList();
             for (int i = 0; i < result.data.nbins; i++) {
                 if (peakpositions[i][j] != 0) {
+                    lnewx.add(x[i][j]);
                     lnewpos.add(peakpositions[i][j]);
                 }
             }
+            double[] newx = Commons.toPrimitive(lnewx.toArray(new Double[0]));
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
-            double mean = MathUtils.averag(newpos);
+            double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
+            double[] a = Tools.getMinMax(tresiduals);
+            /*double mean = MathUtils.averag(newpos);
             double maxi = Math.abs(newpos[0] - mean);
             for (double it : newpos) {
                 maxi = Math.max(maxi, Math.abs(it - mean));
-            }
+            }*/
 
-            result.maxresidual = Math.max(result.maxresidual, maxi);
+            result.maxresidual = Math.max(result.maxresidual, a[1]);
             result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);
