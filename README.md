@@ -18,7 +18,7 @@
 	- Automatically detects a ROI containing the whole phantom and centred on it
   5. Quadrant Bar Phantom
     - Image must be a Quadrant Bar (NEMA) acquisition
-    - User must provide a rectangular ROI containing a relevant portion of ONLY one quadrant 	
+    - Automatically detect all four quadrants and bar sizes 	
   6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom (NEMA)
 	- Automatically detects UFOV and CFOV
