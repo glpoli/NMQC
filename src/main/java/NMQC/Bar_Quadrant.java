@@ -120,6 +120,20 @@ public class Bar_Quadrant implements PlugInFilter {
         }
         return result;
     }
+    
+    private int[] getQuadrantOrder(double[] lmtf) {
+        SortedMap<Double, Integer> map = new TreeMap<>();
+        for (int i = 0; i < 4; i++) {
+            map.put(lmtf[i], i);
+        }
+        int[] result = new int[4];
+        int i=0;
+        for (Map.Entry<Double, Integer> entry : map.entrySet()) {
+            result[i]=entry.getValue();
+            i++;
+        }
+        return result;
+    }
 
     /**
      *
@@ -146,7 +160,7 @@ public class Bar_Quadrant implements PlugInFilter {
         for (int i = 0; i < 4; i++) {
             lFOV[i] = getQuadrant(FOV, i + 1);
             lFOV[i] = DetectBars(imp2, lFOV[i], (float) mean, i);
-            lFOV[i] = new Roi(lFOV[i].getBounds());
+            //lFOV[i] = new Roi(lFOV[i].getBounds());
             lFOV[i].setStrokeColor(Color.yellow);
             list.add(lFOV[i]);
             imp2.setRoi(lFOV[i]);
@@ -156,18 +170,19 @@ public class Bar_Quadrant implements PlugInFilter {
             imp2.deleteRoi();
             lmtf[i] = MathUtils.MTF(lmean, lstddev);
         }
-        double[] bw = getBarWidth(lmtf);
+        int[] bw = getQuadrantOrder(lmtf);
+        Arrays.sort(lmtf);
         for (int i = 0; i < 4; i++) {
-            double FWHM = bw[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
-            double FWTM = bw[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
+            double FWHM = barwidth[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
+            double FWTM = barwidth[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             rt.incrementCounter();
-            rt.addValue("Quadrant", "" + (i + 1));
-            rt.addValue("Barwidth (mm)", "" + bw[i]);
+            rt.addValue("Quadrant", "" + (bw[bw[i]]+1));
+            rt.addValue("Barwidth (mm)", "" + barwidth[i]);
             rt.addValue("MTF", IJ.d2s(lmtf[i], 5, 9));
             rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
             rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
-            double[] center = lFOV[i].getContourCentroid();
-            TextRoi tr = new TextRoi(center[0], center[1], "" + (i + 1));
+            double[] center = lFOV[bw[i]].getContourCentroid();
+            TextRoi tr = new TextRoi(center[0], center[1], "" + (bw[bw[i]]+1));
             list.add(tr);
         }
 
