@@ -113,23 +113,23 @@ public class Bar_Quadrant implements PlugInFilter {
             map.put(lmtf[i], barwidth[i]);
         }
         double[] result = new double[4];
-        int i=0;
+        int i = 0;
         for (Map.Entry<Double, Double> entry : map.entrySet()) {
-            result[i]=entry.getValue();
+            result[i] = entry.getValue();
             i++;
         }
         return result;
     }
-    
+
     private int[] getQuadrantOrder(double[] lmtf) {
         SortedMap<Double, Integer> map = new TreeMap<>();
         for (int i = 0; i < 4; i++) {
             map.put(lmtf[i], i);
         }
         int[] result = new int[4];
-        int i=0;
+        int i = 0;
         for (Map.Entry<Double, Integer> entry : map.entrySet()) {
-            result[i]=entry.getValue();
+            result[i] = entry.getValue();
             i++;
         }
         return result;
@@ -176,13 +176,13 @@ public class Bar_Quadrant implements PlugInFilter {
             double FWHM = barwidth[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             double FWTM = barwidth[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             rt.incrementCounter();
-            rt.addValue("Quadrant", "" + (bw[bw[i]]+1));
+            rt.addValue("Quadrant", "" + (i + 1));
             rt.addValue("Barwidth (mm)", "" + barwidth[i]);
             rt.addValue("MTF", IJ.d2s(lmtf[i], 5, 9));
             rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
             rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
             double[] center = lFOV[bw[i]].getContourCentroid();
-            TextRoi tr = new TextRoi(center[0], center[1], "" + (bw[bw[i]]+1));
+            TextRoi tr = new TextRoi(center[0], center[1], "" + (i + 1));
             list.add(tr);
         }
 
