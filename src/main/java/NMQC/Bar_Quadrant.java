@@ -129,6 +129,7 @@ public class Bar_Quadrant implements PlugInFilter {
     public void run(ImageProcessor ip) {
 
         ImagePlus imp2 = imp.duplicate();
+        imp.deleteRoi();
         imp2.deleteRoi();
         Roi FOV = Commons.getThreshold(imp2, imp2.getStatistics().max * 0.1, 0.95);
         imp2.setRoi(FOV);
@@ -145,6 +146,7 @@ public class Bar_Quadrant implements PlugInFilter {
         for (int i = 0; i < 4; i++) {
             lFOV[i] = getQuadrant(FOV, i + 1);
             lFOV[i] = DetectBars(imp2, lFOV[i], (float) mean, i);
+            lFOV[i] = new Roi(lFOV[i].getBounds());
             lFOV[i].setStrokeColor(Color.yellow);
             list.add(lFOV[i]);
             imp2.setRoi(lFOV[i]);
@@ -169,8 +171,8 @@ public class Bar_Quadrant implements PlugInFilter {
             list.add(tr);
         }
 
-        imp2.setOverlay(list);
-        imp2.show();
+        imp.setOverlay(list);
+        //imp.show();
 
         rt.showRowNumbers(false);
         rt.show("Quadrant bar phantom: " + imp.getTitle());
