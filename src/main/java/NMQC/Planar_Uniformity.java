@@ -17,6 +17,7 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.*;
@@ -223,6 +224,9 @@ public class Planar_Uniformity implements PlugInFilter {
         rt.show("Planar Uniformity: " + imp.getTitle());
 
         imp.setOverlay(list);
+        
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {

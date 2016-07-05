@@ -17,6 +17,7 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 import ij.process.*;
 //import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
@@ -103,6 +104,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
 
         rt.addValue("Maximum Ring Contrast", DU);
         rt.addValue("Centre - Border Contrast", IU);
+        
     }
 
     /**
@@ -156,6 +158,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
         imp2.show();
         rt.showRowNumbers(true);
         rt.show("Tomographic Uniformity " + imp.getTitle() + ": Frames " + sinit + " to " + send);
+        
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
 
     }
 

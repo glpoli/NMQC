@@ -17,6 +17,8 @@ package utils;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.SaveDialog;
+import ij.measure.ResultsTable;
 import ij.plugin.*;
 import ij.plugin.filter.*;
 import ij.process.*;
@@ -247,5 +249,19 @@ public class Commons {
         double angle = (180.0 / Math.PI) * Math.atan2(dy, dx);
         return angle < 0 ? 360 + angle : angle;
     }
+    
+    /**
+     * saves a results table in an excel file
+     * @param rt the results table
+     * @param directory the directory
+     * @param name the file name
+     */
+    public static void saveRT(ResultsTable rt, String directory, String name) {
+        SaveDialog sd = new SaveDialog("Save as Excel file?", directory, "Results-" + name, ".xls");
+        String lname = sd.getFileName();
+        if (lname!=null) {
+            rt.save(sd.getDirectory()+lname);
+        }
+    }    
 
 }

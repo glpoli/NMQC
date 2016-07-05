@@ -19,10 +19,12 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.gui.GenericDialog;
+import ij.io.FileInfo;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.Polygon;
 import utils.*;
 
@@ -33,6 +35,13 @@ import utils.*;
 public class Tomographic_Contrast implements PlugInFilter {
 
     private ImagePlus imp;
+    private ImageProcessor ip2;
+    private String Method;
+    private Roi FOV;
+    private Polygon maxs;
+    private double unif;
+    private double tolerance;
+    private int send;
 
     /**
      *
@@ -50,55 +59,41 @@ public class Tomographic_Contrast implements PlugInFilter {
             IJ.noImage();
             return DONE;
         }
-
+        this.Method = arg;
+        if (Method.contains("Manual")) {
+            if ((imp.getRoi() == null) || !(imp.getRoi() instanceof PointRoi)) {
+                IJ.error("Point Roi required");
+                return ROI_REQUIRED;
+            }
+        }
         this.imp = imp;
         return DOES_ALL;
     }
 
-    /**
-     *
-     * @param ip The image processor
-     */
-    @Override
-    public void run(ImageProcessor ip) {
-        // Variables
-        ResultsTable rt = new ResultsTable();
+    private Polygon Calculate() {
         int ns = imp.getStackSize();
-        ImageStack stack = imp.getImageStack();
         int sinit;
-        int send;
+        send = imp.getCurrentSlice();
         boolean coldsph = true;
         // Dialog
         if (ns > 1) {
             GenericDialog gd = new GenericDialog("Tomographic Contrast.");
             gd.addNumericField("Entre el corte de uniformidad", 1, 0);
-            gd.addNumericField("Entre el corte a procesar", ns, 0);
             gd.addCheckbox("Cold Spheres?", true);
             gd.showDialog();
             if (gd.wasCanceled()) {
-                return;
+                return null;
             }
             sinit = (int) Math.round(gd.getNextNumber());
-            send = (int) Math.round(gd.getNextNumber());
             coldsph = gd.getNextBoolean();
         } else {
             sinit = 1;
-            send = 1;
         }
 
-        // Finding the mean and the tolerance 
-        ImageProcessor ip1 = stack.getProcessor(sinit).duplicate();
-        ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
-        ImageStatistics is1 = imp1.getStatistics();
-        Roi FOV = Commons.getThreshold(imp1, 0.1 * is1.max, 0.9); // 10% of max value for threshold
-        FOV.setStrokeColor(Color.blue);
-        imp1.setRoi(FOV);
-        is1 = imp1.getStatistics();
-        double unif = is1.mean;
-        double tolerance = is1.stdDev * 2;
+        getThresholdValues(sinit);
 
         // Building a temporary matrix to find the peaks
-        ImageProcessor ip2 = stack.getProcessor(send);
+        ip2 = imp.getImageStack().getProcessor(send);
         float[][] pixels = ip2.getFloatArray();
         float[][] ip2mat = new float[ip2.getWidth()][ip2.getHeight()];
         for (int i = 0; i < ip2.getWidth(); i++) {
@@ -113,8 +108,69 @@ public class Tomographic_Contrast implements PlugInFilter {
 
         // Finding all the peaks
         MaximumFinder mf = new MaximumFinder();
-        Polygon maxs = mf.getMaxima(ipt, tolerance, true);
-        
+        return mf.getMaxima(ipt, tolerance, true);
+    }
+
+    private void getThresholdValues(int sinit) {
+        // Finding the mean and the tolerance 
+        ImageProcessor ip1 = imp.getImageStack().getProcessor(sinit).duplicate();
+        ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
+        ImageStatistics is1 = imp1.getStatistics();
+        FOV = Commons.getThreshold(imp1, 0.1 * is1.max, 0.9); // 10% of max value for threshold
+        FOV.setStrokeColor(Color.blue);
+        imp1.setRoi(FOV);
+        is1 = imp1.getStatistics();
+        unif = is1.mean;
+        tolerance = is1.stdDev * 2;
+    }
+
+    private boolean MethodAutomatic() {
+        maxs = Calculate();
+        return maxs != null;
+    }
+
+    private double PointDistance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+    }
+
+    private boolean MethodManual() {
+
+        Polygon tmaxs = Calculate();
+        ip2 = imp.getImageStack().getProcessor(send);
+        Polygon proi = imp.getRoi().getPolygon();
+        int npoints = proi.npoints;
+        double maxr = FOV.getFeretsDiameter() / npoints;
+        maxs = new Polygon();
+        for (int i = 0; i < npoints; i++) {
+            for (int j = 0; j < tmaxs.npoints; j++) {
+                if (PointDistance(proi.xpoints[i], proi.ypoints[i], tmaxs.xpoints[j], tmaxs.ypoints[j]) < maxr) {
+                    maxs.addPoint(tmaxs.xpoints[j], tmaxs.ypoints[j]);
+                    break;
+                }
+            }
+        }
+        return maxs.npoints > 0;
+    }
+
+    /**
+     *
+     * @param ip The image processor
+     */
+    @Override
+    public void run(ImageProcessor ip) {
+        // Variables
+        ResultsTable rt = new ResultsTable();
+        if (Method.contains("Automatic")) {
+            if (!MethodAutomatic()) {
+                return;
+            }
+        } else if (Method.contains("Manual")) {
+            if (!MethodManual()) {
+                return;
+            }
+        } else {
+            return;
+        }
         // Final processing
         Overlay list = new Overlay();
         list.add(FOV);
@@ -140,12 +196,16 @@ public class Tomographic_Contrast implements PlugInFilter {
             rt.addValue("Contrast", contrast);
         }
         list.drawNames(true);
-        ImagePlus imp2 = new ImagePlus(imp.getTitle() + ":Frame " + send, ip2.duplicate());
+        String lname = imp.getTitle() + ":Frame " + send + " - " + Method;
+        ImagePlus imp2 = new ImagePlus(lname, ip2.duplicate());
         imp2.setOverlay(list);
         imp2.show();
 
         rt.showRowNumbers(false);
-        rt.show("Tomographic Contrast " + imp.getTitle() + ": Frame " + send);
+        rt.show("Tomographic Contrast " + lname);
+
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName + "-" + Method);
 
     }
 

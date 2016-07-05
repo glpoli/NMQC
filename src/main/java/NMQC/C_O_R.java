@@ -16,6 +16,8 @@
 package NMQC;
 
 import ij.*;
+import ij.io.FileInfo;
+import ij.io.SaveDialog;
 import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
@@ -182,6 +184,8 @@ public class C_O_R implements PlugInFilter {
             rt.show("Center of Rotation: Conjugate Views " + imp.getTitle());
         }
 
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {
