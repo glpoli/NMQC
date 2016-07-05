@@ -19,6 +19,7 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.gui.GenericDialog;
+import ij.io.FileInfo;
 import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
@@ -146,6 +147,9 @@ public class Tomographic_Contrast implements PlugInFilter {
 
         rt.showRowNumbers(false);
         rt.show("Tomographic Contrast " + imp.getTitle() + ": Frame " + send);
+        
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
 
     }
 

@@ -17,6 +17,7 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
@@ -92,6 +93,9 @@ public class Four_Bar_Phantom implements PlugInFilter {
         rt.addValue("Difference (%)", (1 - resv.PixelSize / resh.PixelSize) * 100);
         rt.showRowNumbers(true);
         rt.show("Four bar phantom: " + imp.getTitle());
+        
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {

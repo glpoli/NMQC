@@ -17,6 +17,7 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
@@ -191,6 +192,9 @@ public class Bar_Quadrant implements PlugInFilter {
 
         rt.showRowNumbers(false);
         rt.show("Quadrant bar phantom: " + imp.getTitle());
+
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {

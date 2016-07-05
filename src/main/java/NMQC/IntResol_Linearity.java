@@ -17,6 +17,7 @@ package NMQC;
 
 import ij.*;
 import ij.gui.*;
+import ij.io.FileInfo;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
@@ -327,6 +328,9 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
         rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle() + forTitle);
+        
+        FileInfo fi = imp.getOriginalFileInfo();
+        Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {
