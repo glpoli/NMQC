@@ -72,7 +72,7 @@ public class Bar_Quadrant implements PlugInFilter {
         }
 
         for (int i = 0; i < fp.npoints; i++) {
-            double angle = Commons.getFloatAngle(middle[0], middle[1], fp.xpoints[i], fp.ypoints[i]);
+            double angle = MathUtils.getFloatAngle(middle[0], middle[1], fp.xpoints[i], fp.ypoints[i]);
             if ((angle >= (quadrant - 1) * 90) && (angle <= quadrant * 90)) {
                 poly.addPoint(fp.xpoints[i], fp.ypoints[i]);
             }

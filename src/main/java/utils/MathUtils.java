@@ -15,7 +15,6 @@
  */
 package utils;
 
-import ij.*;
 import org.apache.commons.math3.stat.StatUtils;
 
 /**
@@ -72,15 +71,16 @@ public class MathUtils {
     public static double Contrast(double min, double max) {
         return Math.abs(max - min) * 100 / (min + max);
     }
-    
-    public static void PrintMatrix(double[][] mat){
-        for (double[] mat1 : mat) {
-            String s = "";
-            for (double m : mat1) {
-                s += m + ", ";
-            }
-            IJ.log(s);
-        }
+
+    /**
+     * Returns the angle in degrees between the specified line and a horizontal
+     * line. in [0 - 360] interval
+     */
+    public static double getFloatAngle(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y1 - y2;
+        double angle = (180.0 / Math.PI) * Math.atan2(dy, dx);
+        return angle < 0 ? 360 + angle : angle;
     }
 
 }
