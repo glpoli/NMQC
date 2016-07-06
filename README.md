@@ -1,8 +1,10 @@
-# NMQC
+# Nuclear Medicine Quality Control utilities
 
-## Nuclear Medicine Quality Control utilities
+Plugins for performing quality controls in nuclear medicine images, current version is still unstable and requires validation.
 
-### Current capabilities
+Released under Apache License version 2, see License.
+
+## Current capabilities
 
   1. Centre of Rotation
     - Image must be a typical COR acquisition with point source
@@ -18,16 +20,19 @@
 	- Automatically detects a ROI containing the whole phantom and centred on it
   5. Quadrant Bar Phantom
     - Image must be a Quadrant Bar (NEMA) acquisition
-    - Automatically detect all four quadrants and bar sizes 	
+    - Automatically detect all four quadrants and bar sizes 
+    - Sorts quadrants in ascending bar order	
   6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom (NEMA)
 	- Automatically detects UFOV and CFOV
   7. Tomographic Contrast
     - Image must be a 3D reconstruction from an Jasczak Phantom acquisition
-	- User shall provide a number referring a uniformity region frame and another for the desired frame for contrast calculation
-	- Automatically detects phantom border and returns the positions of every sphere (even artifacts!), user shall discriminate which detection is correct
+	- Two forms of proceeding: Automatic (user shall only provide a number referring a uniformity region frame) and Manual (The user shall mark with PointRois the positions of the spheres and provide a number referring a uniformity region frame)
+	- The contrast is calculated using the minimum/maximum value in the sphere in case there are cold/hot sphere phantom respectively
+	- In the Automatic method it detects phantom border and returns the positions of every sphere (even artefacts!), user shall discriminate which detection is correct
+	- In the Manual method it detects phantom border and returns the positions of every sphere in the neighbouring of selected points 
 	
-### Work in Progress
+## Work in Progress
 
   1. Tomographic Uniformity
     - The procedure is not clear in the bibliography, however we implemented rings contrast

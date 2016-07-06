@@ -36,9 +36,22 @@
     <developers>
         <developer>
             <id>avg</id>
-            <name>Alex Vergara</name>
+            <name>Alex Vergara Gil</name>
             <email>alexvergaragil@gmail.com</email>
             <url>https://github.com/BishopWolf</url>
+            <organization>CENTIS</organization>
+            <organizationUrl>http://www.centis.edu.cu/</organizationUrl>
+            <roles>
+                <role>medical physicist</role>
+                <role>developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+        <developer>
+            <id>lata</id>
+            <name>Leonel Alberto Torres Aroches</name>
+            <email>leonel@infomed.sld.cu</email>
+            <url>https://github.com/leoneltorres</url>
             <organization>CENTIS</organization>
             <organizationUrl>http://www.centis.edu.cu/</organizationUrl>
             <roles>
