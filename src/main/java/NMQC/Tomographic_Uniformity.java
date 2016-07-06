@@ -19,7 +19,6 @@ import ij.*;
 import ij.gui.*;
 import ij.io.FileInfo;
 import ij.process.*;
-//import ij.gui.GenericDialog; // Enable this line if you want to enable the dialog
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.*;

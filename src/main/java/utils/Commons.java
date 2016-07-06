@@ -240,18 +240,8 @@ public class Commons {
     }
 
     /**
-     * Returns the angle in degrees between the specified line and a horizontal
-     * line. in [0 - 360] interval
-     */
-    public static double getFloatAngle(double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y1 - y2;
-        double angle = (180.0 / Math.PI) * Math.atan2(dy, dx);
-        return angle < 0 ? 360 + angle : angle;
-    }
-    
-    /**
      * saves a results table in an excel file
+     *
      * @param rt the results table
      * @param directory the directory
      * @param name the file name
@@ -259,9 +249,19 @@ public class Commons {
     public static void saveRT(ResultsTable rt, String directory, String name) {
         SaveDialog sd = new SaveDialog("Save as Excel file?", directory, "Results-" + name, ".xls");
         String lname = sd.getFileName();
-        if (lname!=null) {
-            rt.save(sd.getDirectory()+lname);
+        if (lname != null) {
+            rt.save(sd.getDirectory() + lname);
         }
-    }    
+    }
+
+    public static void PrintMatrix(double[][] mat) {
+        for (double[] mat1 : mat) {
+            String s = "";
+            for (double m : mat1) {
+                s += m + ", ";
+            }
+            IJ.log(s);
+        }
+    }
 
 }

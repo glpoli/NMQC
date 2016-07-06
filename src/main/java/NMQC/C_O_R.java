@@ -185,7 +185,7 @@ public class C_O_R implements PlugInFilter {
         }
 
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName);
+        Commons.saveRT(rt, fi.directory, fi.fileName + "-" + Method);
     }
 
     void showAbout() {

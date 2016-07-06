@@ -330,7 +330,7 @@ public class IntResol_Linearity implements PlugInFilter {
         rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle() + forTitle);
         
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName);
+        Commons.saveRT(rt, fi.directory, fi.fileName + "-" + forTitle);
     }
 
     void showAbout() {

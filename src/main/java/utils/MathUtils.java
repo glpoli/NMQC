@@ -15,7 +15,7 @@
  */
 package utils;
 
-import ij.*;
+import org.apache.commons.math3.stat.StatUtils;
 
 /**
  *
@@ -29,11 +29,7 @@ public class MathUtils {
      * @return the mean of the array values
      */
     public static double averag(double[] array) {
-        double suma = 0;
-        for (double m : array) {
-            suma += m;
-        }
-        return suma / array.length;
+        return StatUtils.mean(array);
     }
 
     /**
@@ -42,30 +38,8 @@ public class MathUtils {
      * @return the stddev of the array values
      */
     public static double StdDev(double[] array) {
-        double var = Variance(array);
+        double var = StatUtils.variance(array);
         return var > 0 ? Math.sqrt(var) : 0.0;
-    }
-
-    /**
-     *
-     * @param array
-     * @return the stddev of the array values
-     */
-    public static double Variance(double[] array) {
-        int n = array.length;
-        if (n <= 1) {
-            return 0;
-        }
-
-        double total = 0;
-        double total2 = 0;
-
-        for (double m : array) {
-            total += m;
-            total2 += m * m;
-        }
-
-        return (double) ((total2 - (total * total / n)) / (n - 1));
     }
 
     /**
@@ -74,11 +48,7 @@ public class MathUtils {
      * @return the squared sum of the array values
      */
     public static double sqrsum(double[] array) {
-        double suma = 0;
-        for (double m : array) {
-            suma += m * m;
-        }
-        return suma;
+        return StatUtils.sumSq(array);
     }
 
     /**
@@ -101,15 +71,16 @@ public class MathUtils {
     public static double Contrast(double min, double max) {
         return Math.abs(max - min) * 100 / (min + max);
     }
-    
-    public static void PrintMatrix(double[][] mat){
-        for (double[] mat1 : mat) {
-            String s = "";
-            for (double m : mat1) {
-                s += m + ", ";
-            }
-            IJ.log(s);
-        }
+
+    /**
+     * Returns the angle in degrees between the specified line and a horizontal
+     * line. in [0 - 360] interval
+     */
+    public static double getFloatAngle(double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y1 - y2;
+        double angle = (180.0 / Math.PI) * Math.atan2(dy, dx);
+        return angle < 0 ? 360 + angle : angle;
     }
 
 }
