@@ -24,7 +24,6 @@ import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.Polygon;
 import utils.*;
 

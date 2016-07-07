@@ -20,7 +20,6 @@ import ij.io.FileInfo;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
-import org.apache.commons.math3.stat.StatUtils;
 import utils.*;
 
 /**
@@ -137,8 +136,8 @@ public class C_O_R implements PlugInFilter {
         }
 
         double[] rest = cf.getResiduals();
-        double b = StatUtils.max(rest);
-        double c = StatUtils.max(diferencia);
+        double b = MathUtils.Max(rest);
+        double c = MathUtils.Max(diferencia);
 
         ResultsTable rt = new ResultsTable();
         rt.showRowNumbers(false);
@@ -169,7 +168,7 @@ public class C_O_R implements PlugInFilter {
                 Rx[i] = (imp.getWidth() + 1 - cmx[i] - cmx[i + rsize]) / 2;
             }
 
-            b = StatUtils.max(Rx);
+            b = MathUtils.Max(Rx);
 
             rt.incrementCounter();
             rt.addValue("Test", "COR X");
