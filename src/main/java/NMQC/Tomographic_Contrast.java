@@ -205,7 +205,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         rt.show("Tomographic Contrast " + lname);
 
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName + "-" + Method);
+        Commons.saveRT(rt, fi.directory, lname);
 
     }
 

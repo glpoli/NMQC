@@ -25,6 +25,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.util.Tools;
 import java.awt.Color;
 import java.util.*;
+import org.apache.commons.math3.stat.StatUtils;
 import utils.*;
 
 /**
@@ -271,14 +272,14 @@ public class IntResol_Linearity implements PlugInFilter {
             double[] newx = Commons.toPrimitive(lnewx.toArray(new Double[0]));
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
             double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
-            double[] a = Tools.getMinMax(tresiduals);
+            double a = StatUtils.max(tresiduals);
             /*double mean = MathUtils.averag(newpos);
             double maxi = Math.abs(newpos[0] - mean);
             for (double it : newpos) {
                 maxi = Math.max(maxi, Math.abs(it - mean));
             }*/
 
-            result.maxresidual = Math.max(result.maxresidual, a[1]);
+            result.maxresidual = Math.max(result.maxresidual, a);
             result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);

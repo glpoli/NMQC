@@ -86,9 +86,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
                 gvector[j] += vector[j];
             }
             double[] temp = Tools.getMinMax(vector);
-            double lmin = temp[0];
-            double lmax = temp[1];
-            DU = Math.max(DU, Math.max(MathUtils.Contrast(is.mean, lmax), MathUtils.Contrast(is.mean, lmin)));
+            double lmin = MathUtils.Contrast(is.mean, temp[0]);
+            double lmax = MathUtils.Contrast(is.mean, temp[1]);
+            DU = Math.max(DU, Math.max(lmin, lmax));
         }
 
         double[] ngvector = new double[rmin];
@@ -103,7 +103,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
 
         rt.addValue("Maximum Ring Contrast", DU);
         rt.addValue("Centre - Border Contrast", IU);
-        
+
     }
 
     /**
@@ -150,16 +150,17 @@ public class Tomographic_Uniformity implements PlugInFilter {
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
+        String lname = imp.getTitle() + ": Frames " + sinit + " to " + send;
+        ImagePlus imp2 = new ImagePlus("Mean Image " + lname, ip2);
         ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Commons.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);
-        rt.show("Tomographic Uniformity " + imp.getTitle() + ": Frames " + sinit + " to " + send);
-        
+        rt.show("Tomographic Uniformity " + lname);
+
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName);
+        Commons.saveRT(rt, fi.directory, lname);
 
     }
 

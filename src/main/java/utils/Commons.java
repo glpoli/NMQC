@@ -247,7 +247,7 @@ public class Commons {
      * @param name the file name
      */
     public static void saveRT(ResultsTable rt, String directory, String name) {
-        SaveDialog sd = new SaveDialog("Save as Excel file?", directory, "Results-" + name, ".xls");
+        SaveDialog sd = new SaveDialog("Save as Excel file?", directory, "Results-" + name, ".tsv");
         String lname = sd.getFileName();
         if (lname != null) {
             rt.save(sd.getDirectory() + lname);
@@ -258,7 +258,7 @@ public class Commons {
         for (double[] mat1 : mat) {
             String s = "";
             for (double m : mat1) {
-                s += m + ", ";
+                s += m + "\t";
             }
             IJ.log(s);
         }

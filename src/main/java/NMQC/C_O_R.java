@@ -17,11 +17,10 @@ package NMQC;
 
 import ij.*;
 import ij.io.FileInfo;
-import ij.io.SaveDialog;
-import ij.util.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.filter.PlugInFilter;
+import org.apache.commons.math3.stat.StatUtils;
 import utils.*;
 
 /**
@@ -138,8 +137,8 @@ public class C_O_R implements PlugInFilter {
         }
 
         double[] rest = cf.getResiduals();
-        double[] b = Tools.getMinMax(rest);
-        double[] c = Tools.getMinMax(diferencia);
+        double b = StatUtils.max(rest);
+        double c = StatUtils.max(diferencia);
 
         ResultsTable rt = new ResultsTable();
         rt.showRowNumbers(false);
@@ -148,12 +147,12 @@ public class C_O_R implements PlugInFilter {
             Plotter.plot(cf, false);
             rt.incrementCounter();
             rt.addValue("Test", "COR X");
-            rt.addValue("px", IJ.d2s(b[1], 5, 9));
-            rt.addValue("mm", IJ.d2s(b[1] * vw, 5, 9));
+            rt.addValue("px", IJ.d2s(b, 5, 9));
+            rt.addValue("mm", IJ.d2s(b * vw, 5, 9));
             rt.incrementCounter();
             rt.addValue("Test", "COR Y");
-            rt.addValue("px", IJ.d2s(c[1], 5, 9));
-            rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
+            rt.addValue("px", IJ.d2s(c, 5, 9));
+            rt.addValue("mm", IJ.d2s(c * vh, 5, 9));
 
             rt.show("Center of Rotation: Sine Fit " + imp.getTitle());
         }
@@ -170,16 +169,16 @@ public class C_O_R implements PlugInFilter {
                 Rx[i] = (imp.getWidth() + 1 - cmx[i] - cmx[i + rsize]) / 2;
             }
 
-            b = Tools.getMinMax(Rx);
+            b = StatUtils.max(Rx);
 
             rt.incrementCounter();
             rt.addValue("Test", "COR X");
-            rt.addValue("px", IJ.d2s(b[1], 5, 9));
-            rt.addValue("mm", IJ.d2s(b[1] * vw, 5, 9));
+            rt.addValue("px", IJ.d2s(b, 5, 9));
+            rt.addValue("mm", IJ.d2s(b * vw, 5, 9));
             rt.incrementCounter();
             rt.addValue("Test", "COR Y");
-            rt.addValue("px", IJ.d2s(c[1], 5, 9));
-            rt.addValue("mm", IJ.d2s(c[1] * vh, 5, 9));
+            rt.addValue("px", IJ.d2s(c, 5, 9));
+            rt.addValue("mm", IJ.d2s(c * vh, 5, 9));
 
             rt.show("Center of Rotation: Conjugate Views " + imp.getTitle());
         }
