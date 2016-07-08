@@ -27,6 +27,8 @@ import java.awt.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.stream.Stream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -81,7 +83,7 @@ public class Commons {
     public static String getStringValueFromInfo(String Info, String key) {
         int i = Info.indexOf(key);
         if (i < 0) {
-            IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), java.text.MessageFormat.format(LANGUAGES.getString("NO_INFO_FOR_KEY_IN_DICOM_HEADER"), new Object[] {key}));
+            IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), java.text.MessageFormat.format(LANGUAGES.getString("NO_INFO_FOR_KEY_IN_DICOM_HEADER"), new Object[]{key}));
         }
         while (i > 0 && Character.isLetterOrDigit(Info.charAt(i - 1))) {
             i = Info.indexOf(key, i + key.length());
@@ -242,6 +244,51 @@ public class Commons {
         return result;
     }
 
+    public static String getFileName(String f) {
+        String separator = System.getProperty("file.separator");
+        String filename;
+
+        // Remove the path upto the filename.
+        int lastSeparatorIndex = f.lastIndexOf(separator);
+        if (lastSeparatorIndex == -1) {
+            filename = f;
+        } else {
+            filename = f.substring(lastSeparatorIndex + 1);
+        }
+
+        // Remove the extension.
+        int extensionIndex = filename.lastIndexOf(".");
+        if (extensionIndex == -1) {
+            return filename;
+        }
+
+        String target = filename.substring(0, extensionIndex);
+        return target.equals("") ? filename : target;
+    }
+
+    public static String getFileExtension(String f) {
+        String separator = System.getProperty("file.separator");
+        String ext = "";
+        int i = f.lastIndexOf(".");
+        if (i > 0 && i < f.length() - 1) {
+            ext = f.substring(i + 1);
+        }
+        return ext.contains(separator) ? "" : ext;
+    }
+
+    public static String ChangeFileExt(String source, String newExtension) {
+        String target;
+        String currentExtension = getFileExtension(source);
+
+        if (currentExtension.equals("")) {
+            target = source + newExtension;
+        } else {
+            target = source.replaceFirst(Pattern.quote(currentExtension) + "$", Matcher.quoteReplacement(newExtension));
+
+        }
+        return target;
+    }
+
     /**
      * saves a results table in an excel file
      *
@@ -252,6 +299,7 @@ public class Commons {
     public static void saveRT(ResultsTable rt, String directory, String name) {
         SaveDialog sd = new SaveDialog(LANGUAGES.getString("SAVE_AS_EXCEL_FILE"), directory, "Results-" + name, ".tsv");
         String lname = sd.getFileName();
+        lname = ChangeFileExt(lname, ".tsv");
         if (lname != null) {
             rt.save(sd.getDirectory() + lname);
         }

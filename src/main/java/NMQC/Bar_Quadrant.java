@@ -101,7 +101,7 @@ public class Bar_Quadrant implements PlugInFilter {
             }
         }
         ImageProcessor ip2 = new FloatProcessor(tarray);
-        ImagePlus imp2 = new ImagePlus(Commons.LANGUAGES.getString("TEMPORAL") + quadrant, ip2);
+        ImagePlus imp2 = new ImagePlus("temporal " + quadrant, ip2);
         Roi result = Commons.getThreshold(imp2, max * 0.5, 1);
         //imp2.setRoi(result);
         //imp2.show();
