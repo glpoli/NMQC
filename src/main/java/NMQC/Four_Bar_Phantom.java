@@ -80,14 +80,14 @@ public class Four_Bar_Phantom implements PlugInFilter {
         rt.addValue(Commons.LANGUAGES.getString("TEST"), "FWHM");
         rt.addValue("X (mm)", resv.resolution.getX());
         rt.addValue("Y (mm)", resh.resolution.getX());
-        rt.addValue(java.util.ResourceBundle.getBundle("languages.po").getString("DIFFERENCE (%)"), (1 - resv.resolution.getX() / resh.resolution.getX()) * 100);
+        rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.resolution.getX() / resh.resolution.getX()) * 100);
         rt.incrementCounter();
         rt.addValue(Commons.LANGUAGES.getString("TEST"), "FWTM");
         rt.addValue("X (mm)", resv.resolution.getY());
         rt.addValue("Y (mm)", resh.resolution.getY());
         rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.resolution.getY() / resh.resolution.getY()) * 100);
         rt.incrementCounter();
-        rt.addValue(Commons.LANGUAGES.getString("TEST"), "Pixel Size");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("PIXEL_SIZE"));
         rt.addValue("X (mm)", resv.PixelSize);
         rt.addValue("Y (mm)", resh.PixelSize);
         rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.PixelSize / resh.PixelSize) * 100);
