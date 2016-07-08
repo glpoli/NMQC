@@ -101,7 +101,7 @@ public class Bar_Quadrant implements PlugInFilter {
             }
         }
         ImageProcessor ip2 = new FloatProcessor(tarray);
-        ImagePlus imp2 = new ImagePlus("temporal " + quadrant, ip2);
+        ImagePlus imp2 = new ImagePlus(Commons.LANGUAGES.getString("TEMPORAL") + quadrant, ip2);
         Roi result = Commons.getThreshold(imp2, max * 0.5, 1);
         //imp2.setRoi(result);
         //imp2.show();
@@ -177,8 +177,8 @@ public class Bar_Quadrant implements PlugInFilter {
             double FWHM = barwidth[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             double FWTM = barwidth[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             rt.incrementCounter();
-            rt.addValue("Quadrant", "" + (i + 1));
-            rt.addValue("Barwidth (mm)", "" + barwidth[i]);
+            rt.addValue(Commons.LANGUAGES.getString("Quadrant"), "" + (i + 1));
+            rt.addValue(Commons.LANGUAGES.getString("Barwidth"), "" + barwidth[i]);
             rt.addValue("MTF", IJ.d2s(lmtf[i], 5, 9));
             rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
             rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
@@ -198,11 +198,8 @@ public class Bar_Quadrant implements PlugInFilter {
     }
 
     void showAbout() {
-        IJ.showMessage("About Quadrant Bar Phantom...",
-                "Este plugin determina la resolucion espacial y el MTF en una adquisición de cuadrante.\n"
-                + "This plugin calculates the Spatial Resolution and MTF in a quadrant bar phantom.\n\n"
-                + "Hander et al.: Rapid objective measurement of gamma camera resolution.\n"
-                + "Medical Physics, Vol. 24, No. 2, February 1997");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_QUADRANT_BAR"),
+                Commons.LANGUAGES.getString("QUADRANT_BAR_DESCRIPTION"));
     }
 
 }

@@ -24,6 +24,8 @@ import ij.plugin.filter.*;
 import ij.process.*;
 import static ij.util.Tools.*;
 import java.awt.*;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Stream;
 
 /**
@@ -33,6 +35,7 @@ import java.util.stream.Stream;
 public class Commons {
 
     public static int NEMAWIDTH = 8;
+    public static final ResourceBundle LANGUAGES = ResourceBundle.getBundle("NMQC", Locale.getDefault());
 
     /**
      *

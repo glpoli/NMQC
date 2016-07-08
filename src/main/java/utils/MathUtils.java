@@ -70,7 +70,7 @@ public class MathUtils {
     /**
      *
      * @param array
-     * @return the mean of the array values
+     * @return the min of the array values
      */
     public static double Min(final double[] array)
             throws MathIllegalArgumentException {
@@ -80,7 +80,7 @@ public class MathUtils {
     /**
      *
      * @param array
-     * @return the mean of the array values
+     * @return the max of the array values
      */
     public static double Max(final double[] array)
             throws MathIllegalArgumentException {
@@ -100,7 +100,7 @@ public class MathUtils {
     /**
      *
      * @param array
-     * @return the variance of the array values
+     * @return the skewness of the array values
      */
     public static double Skewness(final double[] array)
             throws MathIllegalArgumentException {
@@ -110,7 +110,7 @@ public class MathUtils {
     /**
      *
      * @param array
-     * @return the variance of the array values
+     * @return the kurtosis of the array values
      */
     public static double Kurtosis(final double[] array)
             throws MathIllegalArgumentException {

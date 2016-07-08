@@ -51,7 +51,7 @@ public class SSR_PxSz implements PlugInFilter {
         }
         roi = imp.getRoi();
         if (roi == null) {
-            IJ.error("Rectangular selection required");
+            IJ.error(Commons.LANGUAGES.getString("RECTANGULAR_SELECTION_REQUIRED"));
             return ROI_REQUIRED;
         }
         this.Method = arg;
@@ -165,11 +165,11 @@ public class SSR_PxSz implements PlugInFilter {
         double c = c2 - c1;
 
         result.PixelSize = realdistance / c;
-        
+
         FPoint2D res1 = Fitter.resolution(x1, arr1, result.PixelSize, false);
         FPoint2D res2 = Fitter.resolution(x2, arr2, result.PixelSize, false);
 
-        result.resolution.assign((res1.getX()+res2.getX())/2, (res1.getY()+res2.getY())/2);
+        result.resolution.assign((res1.getX() + res2.getX()) / 2, (res1.getY() + res2.getY()) / 2);
 
         return result;
     }
@@ -182,8 +182,8 @@ public class SSR_PxSz implements PlugInFilter {
     public void run(ImageProcessor ip) {
 
         String Axis = Method.contains("Vertical") ? "X" : "Y";
-        GenericDialog gd = new GenericDialog("Pixel Size in " + Axis);
-        gd.addNumericField("Enter distance between sources (cm):", 10, 2);
+        GenericDialog gd = new GenericDialog(Commons.LANGUAGES.getString("PIXEL_SIZE_IN") + Axis);
+        gd.addNumericField(Commons.LANGUAGES.getString("ENTER_DISTANCE_BETWEEN_SOURCES"), 10, 2);
         gd.showDialog();
         if (gd.wasCanceled()) {
             return;
@@ -192,11 +192,11 @@ public class SSR_PxSz implements PlugInFilter {
         outputvalues res = Calculate(imp, roi, Method, d);
         ResultsTable rt1 = new ResultsTable();
         rt1.incrementCounter();
-        rt1.addValue("Real Pixel size(mm/px)", IJ.d2s(res.PixelSize, 4, 9));
-        rt1.addValue("Header Pixel size(mm/px)", IJ.d2s(res.HeaderPixelSize, 4, 9));
-        rt1.addValue("Difference(%)", IJ.d2s((res.PixelSize - res.HeaderPixelSize) * 100 / res.PixelSize, 4, 9));
+        rt1.addValue(Commons.LANGUAGES.getString("REAL_PIXEL_SIZE"), IJ.d2s(res.PixelSize, 4, 9));
+        rt1.addValue(Commons.LANGUAGES.getString("HEADER_PIXEL_SIZE"), IJ.d2s(res.HeaderPixelSize, 4, 9));
+        rt1.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), IJ.d2s((res.PixelSize - res.HeaderPixelSize) * 100 / res.PixelSize, 4, 9));
         rt1.showRowNumbers(true);
-        String Title1 = "Pixel size in " + Axis + ": " + imp.getTitle();
+        String Title1 = Commons.LANGUAGES.getString("PIXEL_SIZE_IN") + Axis + ": " + imp.getTitle();
         rt1.show(Title1);
         Point loc1 = WindowManager.getWindow(Title1).getLocation();
         int height1 = WindowManager.getWindow(Title1).getHeight();
@@ -206,14 +206,13 @@ public class SSR_PxSz implements PlugInFilter {
         rt2.addValue("FWHM(mm)", res.resolution.getX());
         rt2.addValue("FWTM(mm)", res.resolution.getY());
         rt2.showRowNumbers(true);
-        String Title2 = "Spatial resolution in " + Axis + ": " + imp.getTitle();
+        String Title2 = Commons.LANGUAGES.getString("SPATIAL_RESOLUTION_IN") + Axis + ": " + imp.getTitle();
         rt2.show(Title2);
-        WindowManager.getWindow(Title2).setLocation(loc1.x, loc1.y+height1);
+        WindowManager.getWindow(Title2).setLocation(loc1.x, loc1.y + height1);
     }
 
     void showAbout() {
-        IJ.showMessage("About Spatial Resolution and Pixel Size...",
-                "Este plugin determina la resolucion espacial y el tamaño del pixel de una imagen de dos barras.\n\n"
-                + "This plugin calculates the System Spatial Resolution and the Pixel Size in a two bar image.");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_SPATIAL_RESOLUTION_AND_PIXEL_SIZE"),
+                Commons.LANGUAGES.getString("DESCRIPTION_SPATIAL_RESOLUTION_AND_PIXEL_SIZE"));
     }
 }

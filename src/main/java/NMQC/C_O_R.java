@@ -99,7 +99,7 @@ public class C_O_R implements PlugInFilter {
 
         //To determinate the offset in X
         CurveFitter cf = new CurveFitter(it, cmx);
-        cf.setStatusAndEsc("Optimization: Iteration ", true);
+        cf.setStatusAndEsc("Optimization: Iteration", true);
         java.lang.String equation = "y = a + b * sin(c * x + d)";
         double[] initialParams = new double[4];
         boolean showSettings = false;
@@ -113,18 +113,18 @@ public class C_O_R implements PlugInFilter {
         int params_e = cf.doCustomFit(equation, initialParams, showSettings);
         if (params_e == 0) {
             IJ.beep();
-            IJ.log("Bad formula; should be:\n   y = function(x, a, ...)");
+            IJ.log(Commons.LANGUAGES.getString("BAD_FORMULA"));
             return;
         }
         if (cf.getStatus() == Minimizer.INITIALIZATION_FAILURE) {
             IJ.beep();
             IJ.showStatus(cf.getStatusString());
-            IJ.log("Curve Fitting Error:\n" + cf.getStatusString());
+            IJ.log(Commons.LANGUAGES.getString("CURVE_FITTING_ERROR") + cf.getStatusString());
             return;
         }
         if (Double.isNaN(cf.getSumResidualsSqr())) {
             IJ.beep();
-            IJ.showStatus("Error: fit yields Not-a-Number");
+            IJ.showStatus(Commons.LANGUAGES.getString("ERRORFIT_YIELDS_NOT-A-NUMBER"));
             return;
         }
 
@@ -145,20 +145,20 @@ public class C_O_R implements PlugInFilter {
         if (Method.contains("Sine")) {//Sine fit
             Plotter.plot(cf, false);
             rt.incrementCounter();
-            rt.addValue("Test", "COR X");
+            rt.addValue(Commons.LANGUAGES.getString("TEST"), "COR X");
             rt.addValue("px", IJ.d2s(b, 5, 9));
             rt.addValue("mm", IJ.d2s(b * vw, 5, 9));
             rt.incrementCounter();
-            rt.addValue("Test", "COR Y");
+            rt.addValue(Commons.LANGUAGES.getString("TEST"), "COR Y");
             rt.addValue("px", IJ.d2s(c, 5, 9));
             rt.addValue("mm", IJ.d2s(c * vh, 5, 9));
 
-            rt.show("Center of Rotation: Sine Fit " + imp.getTitle());
+            rt.show(Commons.LANGUAGES.getString("CENTER_OF_ROTATIONSINE_FIT") + imp.getTitle());
         }
         if (Method.contains("Conjugate")) {//Conjugate views
             if (ScanArc != 360.0) {
-                IJ.error("Error in Connjugate View Method", "Scan Arc must be 360 for this method\n"
-                        + "Current Scan Arc is: " + IJ.d2s(ScanArc));
+                IJ.error(Commons.LANGUAGES.getString("ERROR_IN_CONNJUGATE_VIEW_METHOD"), Commons.LANGUAGES.getString("SCAN_ARC_MUST_BE_360_FOR_THIS_METHOD")
+                        + IJ.d2s(ScanArc));
                 return;
             }
 
@@ -171,24 +171,23 @@ public class C_O_R implements PlugInFilter {
             b = MathUtils.Max(Rx);
 
             rt.incrementCounter();
-            rt.addValue("Test", "COR X");
+            rt.addValue(java.util.ResourceBundle.getBundle("languages.po").getString("TEST"), "COR X");
             rt.addValue("px", IJ.d2s(b, 5, 9));
             rt.addValue("mm", IJ.d2s(b * vw, 5, 9));
             rt.incrementCounter();
-            rt.addValue("Test", "COR Y");
+            rt.addValue(java.util.ResourceBundle.getBundle("languages.po").getString("TEST"), "COR Y");
             rt.addValue("px", IJ.d2s(c, 5, 9));
             rt.addValue("mm", IJ.d2s(c * vh, 5, 9));
 
-            rt.show("Center of Rotation: Conjugate Views " + imp.getTitle());
+            rt.show(Commons.LANGUAGES.getString("CENTER_OF_ROTATIONCONJUGATE_VIEWS") + imp.getTitle());
         }
 
         FileInfo fi = imp.getOriginalFileInfo();
+
         Commons.saveRT(rt, fi.directory, fi.fileName + "-" + Method);
     }
 
     void showAbout() {
-        IJ.showMessage("About COR...",
-                "Este plugin determina el corrimiento del centro de rotación de una cámara gamma.\n\n"
-                + "This plugin determines the offset of the center of rotation of gamma camera");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_COR"), Commons.LANGUAGES.getString("DESCRIPTION_COR"));
     }
 }
