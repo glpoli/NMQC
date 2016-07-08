@@ -177,8 +177,8 @@ public class Bar_Quadrant implements PlugInFilter {
             double FWHM = barwidth[i] * Math.sqrt((16 * Math.log(2) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             double FWTM = barwidth[i] * Math.sqrt((16 * Math.log(10) / (Math.PI * Math.PI)) * Math.log(1 / lmtf[i]));
             rt.incrementCounter();
-            rt.addValue(Commons.LANGUAGES.getString("Quadrant"), "" + (i + 1));
-            rt.addValue(Commons.LANGUAGES.getString("Barwidth"), "" + barwidth[i]);
+            rt.addValue(Commons.LANGUAGES.getString("QUADRANT"), "" + (i + 1));
+            rt.addValue(Commons.LANGUAGES.getString("BARWIDTH"), "" + barwidth[i]);
             rt.addValue("MTF", IJ.d2s(lmtf[i], 5, 9));
             rt.addValue("FWHM (mm)", IJ.d2s(FWHM, 5, 9));
             rt.addValue("FWTM (mm)", IJ.d2s(FWTM, 5, 9));
@@ -191,7 +191,7 @@ public class Bar_Quadrant implements PlugInFilter {
         //imp.show();
 
         rt.showRowNumbers(false);
-        rt.show("Quadrant bar phantom: " + imp.getTitle());
+        rt.show(Commons.LANGUAGES.getString("QUADRANT_BAR_PHANTOM") + imp.getTitle());
 
         FileInfo fi = imp.getOriginalFileInfo();
         Commons.saveRT(rt, fi.directory, fi.fileName);
