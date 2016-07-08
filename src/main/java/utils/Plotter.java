@@ -103,7 +103,7 @@ public class Plotter {
         for (int i = 0; i < y.length; i++) {
             x[i] = i;
         }
-        Plot plot = new Plot("Profile", "X", "Y", x, y);
+        Plot plot = new Plot(Commons.LANGUAGES.getString("PROFILE"), "X", "Y", x, y);
         plot.setColor(Color.RED);
         plot.show();
     }

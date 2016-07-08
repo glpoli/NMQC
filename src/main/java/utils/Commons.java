@@ -81,7 +81,7 @@ public class Commons {
     public static String getStringValueFromInfo(String Info, String key) {
         int i = Info.indexOf(key);
         if (i < 0) {
-            IJ.error("Error while reading header", "No info for key " + key + " in dicom header");
+            IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), java.text.MessageFormat.format(LANGUAGES.getString("NO_INFO_FOR_KEY_IN_DICOM_HEADER"), new Object[] {key}));
         }
         while (i > 0 && Character.isLetterOrDigit(Info.charAt(i - 1))) {
             i = Info.indexOf(key, i + key.length());
@@ -98,7 +98,7 @@ public class Commons {
             sep = " = ";
             i = Value.indexOf(sep);// Bio-Formats metadata?
             if (i < 0) {
-                IJ.error("Error while reading header", "Bad header or not a dicom header");
+                IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), LANGUAGES.getString("BAD_HEADER_OR_NOT_A_DICOM_HEADER"));
             }
         }
         return Value.substring(i + sep.length());
@@ -250,7 +250,7 @@ public class Commons {
      * @param name the file name
      */
     public static void saveRT(ResultsTable rt, String directory, String name) {
-        SaveDialog sd = new SaveDialog("Save as Excel file?", directory, "Results-" + name, ".tsv");
+        SaveDialog sd = new SaveDialog(LANGUAGES.getString("SAVE_AS_EXCEL_FILE"), directory, "Results-" + name, ".tsv");
         String lname = sd.getFileName();
         if (lname != null) {
             rt.save(sd.getDirectory() + lname);
