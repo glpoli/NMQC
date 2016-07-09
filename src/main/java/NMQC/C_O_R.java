@@ -99,7 +99,7 @@ public class C_O_R implements PlugInFilter {
 
         //To determinate the offset in X
         CurveFitter cf = new CurveFitter(it, cmx);
-        cf.setStatusAndEsc("Optimization: Iteration", true);
+        cf.setStatusAndEsc("Optimization: Iteration ", true);
         java.lang.String equation = "y = a + b * sin(c * x + d)";
         double[] initialParams = new double[4];
         boolean showSettings = false;
@@ -171,11 +171,11 @@ public class C_O_R implements PlugInFilter {
             b = MathUtils.Max(Rx);
 
             rt.incrementCounter();
-            rt.addValue(java.util.ResourceBundle.getBundle("languages.po").getString("TEST"), "COR X");
+            rt.addValue(Commons.LANGUAGES.getString("TEST"), "COR X");
             rt.addValue("px", IJ.d2s(b, 5, 9));
             rt.addValue("mm", IJ.d2s(b * vw, 5, 9));
             rt.incrementCounter();
-            rt.addValue(java.util.ResourceBundle.getBundle("languages.po").getString("TEST"), "COR Y");
+            rt.addValue(Commons.LANGUAGES.getString("TEST"), "COR Y");
             rt.addValue("px", IJ.d2s(c, 5, 9));
             rt.addValue("mm", IJ.d2s(c * vh, 5, 9));
 

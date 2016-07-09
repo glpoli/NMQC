@@ -195,7 +195,7 @@ public class Tomographic_Contrast implements PlugInFilter {
             rt.addValue(Commons.LANGUAGES.getString("CONTRAST"), contrast);
         }
         list.drawNames(true);
-        String lname = imp.getTitle() + Commons.LANGUAGES.getString("FRAME") + send + "-" + Method;
+        String lname = imp.getTitle() + ": " + Commons.LANGUAGES.getString("FRAME") + send + "-" + Method;
         ImagePlus imp2 = new ImagePlus(lname, ip2.duplicate());
 
         imp2.setOverlay(list);

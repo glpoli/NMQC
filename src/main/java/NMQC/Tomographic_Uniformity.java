@@ -150,7 +150,7 @@ public class Tomographic_Uniformity implements PlugInFilter {
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        String lname = imp.getTitle() + Commons.LANGUAGES.getString("FRAMES") + " " + sinit + "-" + send;
+        String lname = imp.getTitle() + ": " + Commons.LANGUAGES.getString("FRAMES") + " " + sinit + "-" + send;
         ImagePlus imp2 = new ImagePlus(Commons.LANGUAGES.getString("MEAN_IMAGE") + lname, ip2);
         ImageStatistics is2 = imp2.getStatistics();
         Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
