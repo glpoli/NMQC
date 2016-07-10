@@ -63,7 +63,7 @@ public class FPoint2D implements Comparable<FPoint2D> {
     }
 
     public String Print() {
-        return "X: " + IJ.d2s(X, 4, 9) + "; Y: " + IJ.d2s(Y, 4, 9);
+        return Commons.format("X: {0}; Y: {1}", new Object[]{X, Y});
     }
 
     public static boolean isCounterclockwise(FPoint2D a, FPoint2D b, FPoint2D c) {

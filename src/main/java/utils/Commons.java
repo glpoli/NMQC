@@ -76,6 +76,19 @@ public class Commons {
 
     /**
      *
+     * Helper function to avoid declaration of extra imports in child classes
+     * This function works the same as in python
+     *
+     * @param pattern the pattern string containing {n} for each object
+     * @param arguments object(s) to format as new Object[]{key1, ...}
+     * @return the formatted string
+     */
+    public static String format(String pattern, Object... arguments) {
+        return java.text.MessageFormat.format(pattern, arguments);
+    }
+
+    /**
+     *
      * @param Info the result of ImagePlus.getInfoProperty();
      * @param key the desired key to be returned
      * @return the key value as string
@@ -83,7 +96,7 @@ public class Commons {
     public static String getStringValueFromInfo(String Info, String key) {
         int i = Info.indexOf(key);
         if (i < 0) {
-            IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), java.text.MessageFormat.format(LANGUAGES.getString("NO_INFO_FOR_KEY_IN_DICOM_HEADER"), new Object[]{key}));
+            IJ.error(LANGUAGES.getString("ERROR_WHILE_READING_HEADER"), format(LANGUAGES.getString("NO_INFO_FOR_KEY_IN_DICOM_HEADER"), new Object[]{key}));
         }
         while (i > 0 && Character.isLetterOrDigit(Info.charAt(i - 1))) {
             i = Info.indexOf(key, i + key.length());
@@ -280,6 +293,10 @@ public class Commons {
         String target;
         String currentExtension = getFileExtension(source);
 
+        if (currentExtension.equals(newExtension)) {
+            return source;
+        }
+
         if (currentExtension.equals("")) {
             target = source + newExtension;
         } else {
@@ -290,7 +307,7 @@ public class Commons {
     }
 
     /**
-     * saves a results table in an excel file
+     * saves a results table in a tabulated tsv file that can be opened with excel
      *
      * @param rt the results table
      * @param directory the directory
@@ -299,7 +316,7 @@ public class Commons {
     public static void saveRT(ResultsTable rt, String directory, String name) {
         SaveDialog sd = new SaveDialog(LANGUAGES.getString("SAVE_AS_EXCEL_FILE"), directory, "Results-" + name, ".tsv");
         String lname = sd.getFileName();
-        lname = ChangeFileExt(lname, ".tsv");
+        lname = ChangeFileExt(lname, "tsv");
         if (lname != null) {
             rt.save(sd.getDirectory() + lname);
         }

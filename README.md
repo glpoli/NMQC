@@ -8,6 +8,7 @@ Released under Apache License version 2, see License.
 
   1. Centre of Rotation
     - Image must be a typical COR acquisition with point source
+	- The centre of mass of every slice is adjusted to a sine fit for x offset and to a straight line for y offset
   2. Planar Uniformity
     - Handles octagonal, circular and rectangular shaped cameras
     - Automatically detects UFOV and CFOV
@@ -20,8 +21,8 @@ Released under Apache License version 2, see License.
 	- Automatically detects a ROI containing the whole phantom and centred on it
   5. System Spatial Resolution with Quadrant Bar Phantom
     - Image must be a Quadrant Bar (NEMA) acquisition
-    - Automatically detect all four quadrants and bar sizes 
-    - Sorts quadrants in ascending bar order	
+    - Automatically detect all four quadrants and bar widths 
+    - Sorts quadrants in ascending bar width order	
   6. Intrinsic Resolution and Linearity
     - Image must be a line grid phantom (NEMA) correctly aligned in x and y axis
 	- Automatically detects UFOV and CFOV
