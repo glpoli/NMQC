@@ -86,9 +86,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
                 gvector[j] += vector[j];
             }
             double[] temp = Tools.getMinMax(vector);
-            double lmin = temp[0];
-            double lmax = temp[1];
-            DU = Math.max(DU, Math.max(MathUtils.Contrast(is.mean, lmax), MathUtils.Contrast(is.mean, lmin)));
+            double lmin = MathUtils.Contrast(is.mean, temp[0]);
+            double lmax = MathUtils.Contrast(is.mean, temp[1]);
+            DU = Math.max(DU, Math.max(lmin, lmax));
         }
 
         double[] ngvector = new double[rmin];
@@ -101,9 +101,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
         }
         double IU = MathUtils.Contrast(centre, border);
 
-        rt.addValue("Maximum Ring Contrast", DU);
-        rt.addValue("Centre - Border Contrast", IU);
-        
+        rt.addValue(Commons.LANGUAGES.getString("MAXIMUM_RING_CONTRAST"), DU);
+        rt.addValue(Commons.LANGUAGES.getString("CENTRE_BORDER_CONTRAST"), IU);
+
     }
 
     /**
@@ -121,9 +121,9 @@ public class Tomographic_Uniformity implements PlugInFilter {
         int sinit;
         int send;
         if (ns > 1) {
-            GenericDialog gd = new GenericDialog("Tomographic Uniformity.");
-            gd.addNumericField("Entre el corte inicial", 1, 0);
-            gd.addNumericField("Entre el corte final", ns, 0);
+            GenericDialog gd = new GenericDialog(Commons.LANGUAGES.getString("TOMOGRAPHIC_UNIFORMITY"));
+            gd.addNumericField(Commons.LANGUAGES.getString("INITIAL_FRAME"), 1, 0);
+            gd.addNumericField(Commons.LANGUAGES.getString("FINAL_FRAME"), ns, 0);
             gd.showDialog();
             if (gd.wasCanceled()) {
                 return;
@@ -150,23 +150,23 @@ public class Tomographic_Uniformity implements PlugInFilter {
             }
         }
         FloatProcessor ip2 = new FloatProcessor(ip2mat);
-        ImagePlus imp2 = new ImagePlus("Mean Image " + imp.getTitle() + ": Frames " + sinit + " to " + send, ip2);
+        String lname = imp.getTitle() + ": " + Commons.LANGUAGES.getString("FRAMES") + " " + sinit + "-" + send;
+        ImagePlus imp2 = new ImagePlus(Commons.LANGUAGES.getString("MEAN_IMAGE") + lname, ip2);
         ImageStatistics is2 = imp2.getStatistics();
-        Roi FOV = Commons.getThreshold(imp2, 0.1*is2.max, 0.9); // 10% of max value for threshold
+        Roi FOV = Commons.getThreshold(imp2, 0.1 * is2.max, 0.9); // 10% of max value for threshold
         getUniformity(imp2, FOV, rt);
         imp2.show();
         rt.showRowNumbers(true);
-        rt.show("Tomographic Uniformity " + imp.getTitle() + ": Frames " + sinit + " to " + send);
-        
+        rt.show(Commons.LANGUAGES.getString("TOMOGRAPHIC_UNIFORMITY") + lname);
+
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName);
+        Commons.saveRT(rt, fi.directory, lname);
 
     }
 
     void showAbout() {
-        IJ.showMessage("About Tomographic Uniformity...",
-                "Este plugin es para hallar la uniformidad tomográfica en reconstrucciones 3D.\n"
-                + "This plugin finds the tomographic uniformity in 3D reconstructions");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_TOMOGRAPHIC_UNIFORMITY"),
+                Commons.LANGUAGES.getString("DESCRIPTION_TOMOGRAPHIC_UNIFORMITY"));
     }
 
 }

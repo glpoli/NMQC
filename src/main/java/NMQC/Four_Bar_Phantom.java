@@ -65,43 +65,42 @@ public class Four_Bar_Phantom implements PlugInFilter {
         roi = new Roi(roi.getBounds());
         roi.setStrokeColor(Color.yellow);
         imp.setRoi(roi);
-        GenericDialog gd = new GenericDialog("Four Bars Phantom");
-        gd.addNumericField("Enter distance between sources (cm):", 10, 2);
+        GenericDialog gd = new GenericDialog(Commons.LANGUAGES.getString("FOUR_BARS_PHANTOM"));
+        gd.addNumericField(Commons.LANGUAGES.getString("ENTER_DISTANCE_BETWEEN_SOURCES"), 10, 2);
         gd.showDialog();
         if (gd.wasCanceled()) {
             return;
         }
         double d = gd.getNextNumber() * 10;
-        SSR_PxSz.outputvalues resv = SSR_PxSz.Calculate(imp, roi, "Vertical", d);
-        SSR_PxSz.outputvalues resh = SSR_PxSz.Calculate(imp, roi, "Horizontal", d);
+        SSR_PxSz.outputvalues resv = SSR_PxSz.Calculate(imp, roi, Commons.LANGUAGES.getString("VERTICAL"), d);
+        SSR_PxSz.outputvalues resh = SSR_PxSz.Calculate(imp, roi, Commons.LANGUAGES.getString("HORIZONTAL"), d);
 
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Test", "FWHM");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), "FWHM");
         rt.addValue("X (mm)", resv.resolution.getX());
         rt.addValue("Y (mm)", resh.resolution.getX());
-        rt.addValue("Difference (%)", (1 - resv.resolution.getX() / resh.resolution.getX()) * 100);
+        rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.resolution.getX() / resh.resolution.getX()) * 100);
         rt.incrementCounter();
-        rt.addValue("Test", "FWTM");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), "FWTM");
         rt.addValue("X (mm)", resv.resolution.getY());
         rt.addValue("Y (mm)", resh.resolution.getY());
-        rt.addValue("Difference (%)", (1 - resv.resolution.getY() / resh.resolution.getY()) * 100);
+        rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.resolution.getY() / resh.resolution.getY()) * 100);
         rt.incrementCounter();
-        rt.addValue("Test", "Pixel Size");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("PIXEL_SIZE"));
         rt.addValue("X (mm)", resv.PixelSize);
         rt.addValue("Y (mm)", resh.PixelSize);
-        rt.addValue("Difference (%)", (1 - resv.PixelSize / resh.PixelSize) * 100);
+        rt.addValue(Commons.LANGUAGES.getString("DIFFERENCE"), (1 - resv.PixelSize / resh.PixelSize) * 100);
         rt.showRowNumbers(true);
-        rt.show("Four bar phantom: " + imp.getTitle());
+        rt.show(Commons.LANGUAGES.getString("FOUR_BARS_PHANTOM")+": " + imp.getTitle());
         
         FileInfo fi = imp.getOriginalFileInfo();
         Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {
-        IJ.showMessage("About Four Bar Phantom...",
-                "Este plugin determina la resolucion espacial y el tamaño de pixel en ambos ejes de la imagen.\n\n"
-                + "This plugin calculates the Spatial Resolution and Pixel Sizes in both axis of the image.");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_FOUR_BARS_PHANTOM"),
+                Commons.LANGUAGES.getString("DESCRIPTION_FOUR_BARS_PHANTOM"));
     }
 
 }

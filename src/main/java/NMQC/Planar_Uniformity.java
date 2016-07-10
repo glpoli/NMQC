@@ -44,7 +44,7 @@ public class Planar_Uniformity implements PlugInFilter {
      */
     @Override
     public int setup(String arg, ImagePlus imp) {
-        if (arg.equals("about")) {
+        if (arg.equals("about"))    {
             showAbout();
             return DONE;
         }
@@ -80,7 +80,7 @@ public class Planar_Uniformity implements PlugInFilter {
         // Rebin the original image to achieve pixel size around 6mm
         Binner bin = new Binner();
         ImageProcessor ip2 = bin.shrink(imp.getProcessor(), shrinkfactor, shrinkfactor, Binner.SUM);
-        ImagePlus imp2 = new ImagePlus("Convolved " + sFOV, ip2);
+        ImagePlus imp2 = new ImagePlus(Commons.LANGUAGES.getString("CONVOLVED") + sFOV.getName(), ip2);
         // Shrink the ROI too to perform the calculation
         double scale = 1.0 / shrinkfactor;
         Roi lFOV = RoiScaler.scale(sFOV, scale, scale, false);
@@ -200,39 +200,39 @@ public class Planar_Uniformity implements PlugInFilter {
         outputvalues CFOV = getUniformity(imp, FOV, shrinkfactor);
 
         rt.incrementCounter();
-        rt.addValue("Test", "Differential Uniformity (%)");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("DIFFERENTIAL_UNIFORMITY"));
         rt.addValue("UFOV", UFOV.DU);
         rt.addValue("CFOV", CFOV.DU);
         rt.incrementCounter();
-        rt.addValue("Test", "Integral Uniformity (%)");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("INTEGRAL_UNIFORMITY"));
         rt.addValue("UFOV", UFOV.IU);
         rt.addValue("CFOV", CFOV.IU);
         rt.incrementCounter();
-        rt.addValue("Test", "Average Pixel Value");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("AVERAGE_PIXEL_VALUE"));
         rt.addValue("UFOV", UFOV.mean);
         rt.addValue("CFOV", CFOV.mean);
         rt.incrementCounter();
-        rt.addValue("Test", "Maximum Pixel Value");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("MAXIMUM_PIXEL_VALUE"));
         rt.addValue("UFOV", UFOV.max);
         rt.addValue("CFOV", CFOV.max);
         rt.incrementCounter();
-        rt.addValue("Test", "Minimum Pixel Value");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("MINIMUM_PIXEL_VALUE"));
         rt.addValue("UFOV", UFOV.min);
         rt.addValue("CFOV", CFOV.min);
 
         rt.showRowNumbers(true);
-        rt.show("Planar Uniformity: " + imp.getTitle());
+        rt.show(Commons.LANGUAGES.getString("PLANAR_UNIFORMITY") + imp.getTitle());
 
         imp.setOverlay(list);
-        
+
         FileInfo fi = imp.getOriginalFileInfo();
+
         Commons.saveRT(rt, fi.directory, fi.fileName);
     }
 
     void showAbout() {
-        IJ.showMessage("About Planar Uniformity...",
-                "Este plugin es para hallar la uniformidad planar de imágenes planas.\n"
-                + "This plugin finds the planar uniformity in planar images");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_PLANAR_UNIFORMITY"),
+                Commons.LANGUAGES.getString("DESCRIPTION_PLANAR_UNIFORMITY"));
     }
 
 }

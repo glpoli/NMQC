@@ -22,7 +22,6 @@ import ij.process.*;
 import ij.measure.*;
 import ij.plugin.RoiEnlarger;
 import ij.plugin.filter.PlugInFilter;
-import ij.util.Tools;
 import java.awt.Color;
 import java.util.*;
 import utils.*;
@@ -271,14 +270,9 @@ public class IntResol_Linearity implements PlugInFilter {
             double[] newx = Commons.toPrimitive(lnewx.toArray(new Double[0]));
             double[] newpos = Commons.toPrimitive(lnewpos.toArray(new Double[0]));
             double[] tresiduals = Fitter.getResidualsinLinearFit(newx, newpos, false);
-            double[] a = Tools.getMinMax(tresiduals);
-            /*double mean = MathUtils.averag(newpos);
-            double maxi = Math.abs(newpos[0] - mean);
-            for (double it : newpos) {
-                maxi = Math.max(maxi, Math.abs(it - mean));
-            }*/
+            double a = MathUtils.Max(tresiduals);
 
-            result.maxresidual = Math.max(result.maxresidual, a[1]);
+            result.maxresidual = Math.max(result.maxresidual, a);
             result.stddevresidual = Math.max(result.stddevresidual, MathUtils.StdDev(newpos));
         }
         IJ.showProgress(1.0);
@@ -299,45 +293,42 @@ public class IntResol_Linearity implements PlugInFilter {
         imp.setOverlay(list);
         ResultsTable rt = new ResultsTable();
         rt.incrementCounter();
-        rt.addValue("Test", "Number of bins: ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("NUMBER_OF_BINS"));
         rt.addValue("UFOV", r1.data.nbins);
         rt.addValue("CFOV", r2.data.nbins);
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic FWHM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("WORST_INTRINSIC_FWHM_IN") + r1.data.AxisRes + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.resol.getX(), 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.resol.getX(), 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Worst Intrinsic FWTM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("WORST_INTRINSIC_FWTM_IN") + r1.data.AxisRes + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.resol.getY(), 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.resol.getY(), 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic FWHM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("MEAN_INTRINSIC_FWHM_IN") + r1.data.AxisRes + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.meanresol.getX(), 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.meanresol.getX(), 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Mean Intrinsic FWTM in " + r1.data.AxisRes + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("MEAN_INTRINSIC_FWTM_IN") + r1.data.AxisRes + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.meanresol.getY(), 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.meanresol.getY(), 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Absolute Linearity in " + r1.data.AxisLin + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("ABSOLUTE_LINEARITY_IN") + r1.data.AxisLin + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.maxresidual, 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.maxresidual, 4, 9));
         rt.incrementCounter();
-        rt.addValue("Test", "Differential Linearity in " + r1.data.AxisLin + "(mm): ");
+        rt.addValue(Commons.LANGUAGES.getString("TEST"), Commons.LANGUAGES.getString("DIFFERENTIAL_LINEARITY_IN") + r1.data.AxisLin + "(mm)");
         rt.addValue("UFOV", IJ.d2s(r1.stddevresidual, 4, 9));
         rt.addValue("CFOV", IJ.d2s(r2.stddevresidual, 4, 9));
         rt.showRowNumbers(false);
-        rt.show("Intrinsic Resolution and Linearity: " + imp.getTitle() + forTitle);
-        
+        rt.show(Commons.LANGUAGES.getString("INTRINSIC_RESOLUTION_AND_LINEARITY") + imp.getTitle() + forTitle);
+
         FileInfo fi = imp.getOriginalFileInfo();
         Commons.saveRT(rt, fi.directory, fi.fileName + "-" + forTitle);
     }
 
     void showAbout() {
-        IJ.showMessage("About Intrinsic Resolution and Linearity...",
-                "Este plugin determina el peor valor y el promedio de los valores de resolucion intrinseca\n"
-                + " y determina la linealidad absoluta y diferencial.\n\n"
-                + "This plugin determinate the worst value and the mean of the values of intrinsic resolution\n"
-                + " and determinate the absolute linearity and differential linearity.\n");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_INTRINSIC_RESOLUTION_AND_LINEARITY"),
+                Commons.LANGUAGES.getString("DESCRIPTION_INTRINSIC_RESOLUTION_AND_LINEARITY"));
     }
 }

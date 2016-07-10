@@ -168,7 +168,7 @@ public class Fitter {
     public static int findMiddlePointinTwoPeaks(double[] array) {
         int[] peakpos = Fitter.findPeaks(array);
         if (peakpos.length < 2) {
-            IJ.error("Two bars phantom needed");
+            IJ.error(Commons.LANGUAGES.getString("TWO_BARS_PHANTOM_NEEDED"));
             return 0;
         }
         FPoint2D maximo1 = new FPoint2D(0, 0);

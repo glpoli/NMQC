@@ -24,7 +24,6 @@ import ij.measure.*;
 import ij.plugin.filter.*;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.Polygon;
 import utils.*;
 
@@ -62,7 +61,7 @@ public class Tomographic_Contrast implements PlugInFilter {
         this.Method = arg;
         if (Method.contains("Manual")) {
             if ((imp.getRoi() == null) || !(imp.getRoi() instanceof PointRoi)) {
-                IJ.error("Point Roi required");
+                IJ.error(Commons.LANGUAGES.getString("POINT_ROI_REQUIRED"));
                 return ROI_REQUIRED;
             }
         }
@@ -77,9 +76,9 @@ public class Tomographic_Contrast implements PlugInFilter {
         boolean coldsph = true;
         // Dialog
         if (ns > 1) {
-            GenericDialog gd = new GenericDialog("Tomographic Contrast.");
-            gd.addNumericField("Entre el corte de uniformidad", 1, 0);
-            gd.addCheckbox("Cold Spheres?", true);
+            GenericDialog gd = new GenericDialog(Commons.LANGUAGES.getString("TOMOGRAPHIC_CONTRAST"));
+            gd.addNumericField(Commons.LANGUAGES.getString("UNIFORMITY_FRAME"), 1, 0);
+            gd.addCheckbox(Commons.LANGUAGES.getString("COLD_SPHERES"), true);
             gd.showDialog();
             if (gd.wasCanceled()) {
                 return null;
@@ -114,7 +113,7 @@ public class Tomographic_Contrast implements PlugInFilter {
     private void getThresholdValues(int sinit) {
         // Finding the mean and the tolerance 
         ImageProcessor ip1 = imp.getImageStack().getProcessor(sinit).duplicate();
-        ImagePlus imp1 = new ImagePlus("Uniformity image", ip1);
+        ImagePlus imp1 = new ImagePlus(Commons.LANGUAGES.getString("UNIFORMITY_IMAGE"), ip1);
         ImageStatistics is1 = imp1.getStatistics();
         FOV = Commons.getThreshold(imp1, 0.1 * is1.max, 0.9); // 10% of max value for threshold
         FOV.setStrokeColor(Color.blue);
@@ -182,37 +181,40 @@ public class Tomographic_Contrast implements PlugInFilter {
             // Adding points in the position of the maximas
             PointRoi tpoint = new PointRoi(maxs.xpoints[i], maxs.ypoints[i]);
             tpoint.setFillColor(Color.yellow);
-            list.add(tpoint, "Sphere " + (i + 1));
+            list.add(tpoint, Commons.LANGUAGES.getString("SPHERE") + (i + 1));
             TextRoi text = new TextRoi(maxs.xpoints[i], maxs.ypoints[i], "" + (i + 1));
             text.setStrokeColor(Color.red);
             list.add(text);
             // Creating the results table
             rt.incrementCounter();
-            rt.addValue("Sphere", i + 1);
+            rt.addValue(Commons.LANGUAGES.getString("SPHERE"), i + 1);
             rt.addValue("x", maxs.xpoints[i]);
             rt.addValue("y", maxs.ypoints[i]);
-            rt.addValue("value", ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
-            rt.addValue("mean", unif);
-            rt.addValue("Contrast", contrast);
+            rt.addValue(Commons.LANGUAGES.getString("VALUE"), ip2.getPixelValue(maxs.xpoints[i], maxs.ypoints[i]));
+            rt.addValue(Commons.LANGUAGES.getString("MEAN"), unif);
+            rt.addValue(Commons.LANGUAGES.getString("CONTRAST"), contrast);
         }
         list.drawNames(true);
-        String lname = imp.getTitle() + ":Frame " + send + " - " + Method;
+        String lname = imp.getTitle() + ": " + Commons.LANGUAGES.getString("FRAME") + send + "-" + Method;
         ImagePlus imp2 = new ImagePlus(lname, ip2.duplicate());
+
         imp2.setOverlay(list);
+
         imp2.show();
 
-        rt.showRowNumbers(false);
-        rt.show("Tomographic Contrast " + lname);
+        rt.showRowNumbers(
+                false);
+        rt.show(Commons.LANGUAGES.getString("TOMOGRAPHIC_CONTRAST") + lname);
 
         FileInfo fi = imp.getOriginalFileInfo();
-        Commons.saveRT(rt, fi.directory, fi.fileName + "-" + Method);
+
+        Commons.saveRT(rt, fi.directory, lname);
 
     }
 
     void showAbout() {
-        IJ.showMessage("About Tomographic Contrast...",
-                "Este plugin es para hallar el contraste tomográfico en reconstrucciones 3D.\n"
-                + "This plugin finds the tomographic contrast in 3D reconstructions");
+        IJ.showMessage(Commons.LANGUAGES.getString("ABOUT_TOMOGRAPHIC_CONTRAST"),
+                Commons.LANGUAGES.getString("DESCRIPTION_TOMOGRAPHIC_CONTRAST"));
     }
 
 }

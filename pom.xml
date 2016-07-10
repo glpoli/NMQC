@@ -14,7 +14,7 @@
 
     <groupId>cu.edu.centis</groupId>
     <artifactId>NMQC_</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 
     <name>plugins/NMQC.jar</name>
     <description>A Maven project implementing Nuclear Medicine Quality Control utilities</description>
@@ -123,19 +123,9 @@
             <version>1.51d</version>
         </dependency>
         <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>imagescience</artifactId>
-            <version>3.0.0</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>FeatureJ_</artifactId>
-            <version>2.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>imagej-ops</artifactId>
         </dependency>
     </dependencies>
 </project>
