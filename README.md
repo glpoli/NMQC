@@ -1,6 +1,8 @@
 # Nuclear Medicine Quality Control utilities
 
-Plugins for performing quality controls in nuclear medicine images, current stable version is 0.2.0 in master branch and still requires validation, development version is in develop branch an is currently 0.2.1. All results are saved as tsv files (optional, to open them just map tsv extension to be opened by excel or other related software).
+Plugins for performing quality controls in nuclear medicine images, current stable version is 0.2.2 in master branch and still requires validation, development version is in develop branch an is currently 0.2.3. All results are saved as tsv files (optional, to open them just map tsv extension to be opened by excel or other related software).
+
+Current support for English, Spanish, Italian and Portuguese languages
 
 Released under Apache License version 2, see License.
 
