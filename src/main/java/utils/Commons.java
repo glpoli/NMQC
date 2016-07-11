@@ -316,8 +316,8 @@ public class Commons {
     public static void saveRT(ResultsTable rt, String directory, String name) {
         SaveDialog sd = new SaveDialog(LANGUAGES.getString("SAVE_AS_EXCEL_FILE"), directory, "Results-" + name, ".tsv");
         String lname = sd.getFileName();
-        lname = ChangeFileExt(lname, "tsv");
         if (lname != null) {
+            lname = ChangeFileExt(lname, "tsv");
             rt.save(sd.getDirectory() + lname);
         }
     }

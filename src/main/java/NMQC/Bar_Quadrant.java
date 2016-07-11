@@ -135,6 +135,26 @@ public class Bar_Quadrant implements PlugInFilter {
         }
         return result;
     }
+    
+    private Roi fixRegions(Roi region, Roi FOV) {
+        Roi lbounds = new Roi(region.getBounds());
+        FloatPolygon fp;
+        FloatPolygon poly = new FloatPolygon();
+        if (IJ.getVersion().contains("1.51")) {
+            fp = lbounds.getContainedFloatPoints();
+        } else {
+            fp = Commons.getContainedFloatPoints(lbounds);
+        }
+
+        for (int i = 0; i < fp.npoints; i++) {
+            if (FOV.contains((int)fp.xpoints[i],(int) fp.ypoints[i])) {
+                poly.addPoint(fp.xpoints[i], fp.ypoints[i]);
+            }
+        }
+
+        PolygonRoi result = new PolygonRoi(poly, Roi.POLYGON);
+        return new PolygonRoi(result.getConvexHull(), Roi.POLYGON);
+    }
 
     /**
      *
@@ -161,7 +181,7 @@ public class Bar_Quadrant implements PlugInFilter {
         for (int i = 0; i < 4; i++) {
             lFOV[i] = getQuadrant(FOV, i + 1);
             lFOV[i] = DetectBars(imp2, lFOV[i], (float) mean, i);
-            //lFOV[i] = new Roi(lFOV[i].getBounds());
+            lFOV[i] = fixRegions(lFOV[i], FOV);
             lFOV[i].setStrokeColor(Color.yellow);
             list.add(lFOV[i]);
             imp2.setRoi(lFOV[i]);

@@ -14,7 +14,7 @@
 
     <groupId>cu.edu.centis</groupId>
     <artifactId>NMQC_</artifactId>
-    <version>0.2.2</version>
+    <version>0.2.3-SNAPSHOT</version>
 
     <name>plugins/NMQC.jar</name>
     <description>A Maven project implementing Nuclear Medicine Quality Control utilities</description>
